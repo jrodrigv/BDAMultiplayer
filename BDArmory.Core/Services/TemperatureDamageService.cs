@@ -8,22 +8,22 @@ namespace BDArmory.Core.Services
         public override void SetDamageToPart(Part p, double damage)
         {
             p.temperature = damage;
-            PublishEvent(new DamageEventArgs()
-            {
-                VesselId = p.vessel.GetInstanceID(),
-                PartId = p.GetInstanceID(),
-                Damage = damage,
-                Operation = DamageOperation.Set
-            });
+            PublishDamageEvent(p, damage);
         }
 
         public override void AddDamageToPart(Part p, double damage)
         {
             p.temperature += damage;
+            PublishDamageEvent(p, damage);
+        }
+
+        private void PublishDamageEvent(Part p, double damage)
+        {
             PublishEvent(new DamageEventArgs()
             {
-                VesselId = p.vessel.GetInstanceID(),
-                PartId = p.GetInstanceID(),
+                VesselId = p.vessel.id,
+                PartFlightId = p.flightID,
+                PartCraftId = p.craftID,
                 Damage = damage,
                 Operation = DamageOperation.Add
             });
