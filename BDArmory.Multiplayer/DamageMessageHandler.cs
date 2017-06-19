@@ -1,8 +1,9 @@
 using System.Linq;
+using BDArmory.Core;
 using BDArmory.Core.Enum;
 using BDArmory.Core.Events;
 using BDArmory.Core.Extension;
-
+using BDArmory.Core.Services;
 using UnityEngine;
 
 namespace BDArmory.Multiplayer
@@ -25,13 +26,15 @@ namespace BDArmory.Multiplayer
                 Part part = vessel.Parts.FirstOrDefault(p => p.flightID == message.PartFlightId) ??
                             vessel.Parts.FirstOrDefault(p => p.craftID == message.PartCraftId);
 
+                if (part == null) return;
+
                 if (message.Operation == DamageOperation.Add)
                 {
-                    part?.AddDamage(message.Damage);
+                    Dependencies.Get<DamageService>().AddDamageToPart(part, message.Damage);
                 }
                 else
                 {
-                    part?.SetDamage(message.Damage);
+                    Dependencies.Get<DamageService>().SetDamageToPart(part, message.Damage);
                 }
             }
         }
