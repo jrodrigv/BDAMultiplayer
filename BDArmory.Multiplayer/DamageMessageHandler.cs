@@ -18,7 +18,6 @@ namespace BDArmory.Multiplayer
             }
             else
             {
-                Debug.LogError("[BDArmory]: DamageMessageHandler new message");
                 var vessel = FlightGlobals.VesselsLoaded.FirstOrDefault(v => v.id == message.VesselId);
 
                 if (vessel == null || vessel.packed) return;
