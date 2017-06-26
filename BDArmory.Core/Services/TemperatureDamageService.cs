@@ -1,7 +1,4 @@
-﻿using BDArmory.Core.Enum;
-using BDArmory.Core.Events;
-
-namespace BDArmory.Core.Services
+﻿namespace BDArmory.Core.Services
 {
     internal class TemperatureDamageService : DamageService
     {

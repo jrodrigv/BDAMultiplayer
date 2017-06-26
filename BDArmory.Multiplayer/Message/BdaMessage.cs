@@ -1,6 +1,5 @@
 
 using System;
-using BDArmory.Multiplayer.Enum;
 
 namespace BDArmory.Multiplayer.Message
 {
