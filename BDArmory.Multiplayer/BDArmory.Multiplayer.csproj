@@ -48,8 +48,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DamageMessageHandler.cs" />
+    <Compile Include="Handler\DamageMessageHandler.cs" />
     <Compile Include="Enum\MessageType.cs" />
+    <Compile Include="Handler\ExplosionMessageHandler.cs" />
+    <Compile Include="Interface\IBdaMessageHandler.cs" />
     <Compile Include="Interface\IMultiplayerSystem.cs" />
     <Compile Include="LunaMultiplayerSytem.cs" />
     <Compile Include="Message\BdaMessage.cs" />
@@ -60,6 +62,14 @@
     <ProjectReference Include="..\BDArmory.Core\BDArmory.Core.csproj">
       <Project>{A6F1753E-9570-4C40-AF72-A179890582E5}</Project>
       <Name>BDArmory.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BDArmory.Events\BDArmory.Events.csproj">
+      <Project>{6DB74D09-78D4-4579-B63C-BEB4EFF21D25}</Project>
+      <Name>BDArmory.Events</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BDArmory\BDArmory.csproj">
+      <Project>{d86f2003-1724-4f4c-bb5a-b0109cb16f35}</Project>
+      <Name>BDArmory</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

@@ -1682,7 +1682,7 @@ namespace BDArmory
 		    if(part!=null) part.SetDamage(part.temperature + 100);
 		    Vector3 position = transform.position;//+rigidbody.velocity*Time.fixedDeltaTime;
 		    if(SourceVessel==null) SourceVessel = vessel;
-		    ExplosionFX.CreateExplosion(position, blastRadius, blastPower, blastHeat, SourceVessel, transform.forward, explModelPath, explSoundPath); //TODO: apply separate heat damage
+		    ExplosionFx.CreateExplosion(position, blastRadius, blastPower, blastHeat, SourceVessel, explModelPath, explSoundPath); //TODO: apply separate heat damage
 
 		    List<BDAGaplessParticleEmitter>.Enumerator e = gaplessEmitters.GetEnumerator();
             while (e.MoveNext())

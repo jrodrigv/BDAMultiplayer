@@ -98,7 +98,7 @@ namespace BDArmory.Parts
                 part.SetDamage(part.maxTemp + 100);
 	        }
 	        Vector3 position = part.vessel.CoM;
-	        ExplosionFX.CreateExplosion(position, blastRadius, blastPower, blastHeat, vessel, FlightGlobals.getUpAxis(),
+	        ExplosionFx.CreateExplosion(position, blastRadius, blastPower, blastHeat, vessel,
 	            "BDArmory/Models/explosion/explosionLarge", "BDArmory/Sounds/explode1");
 	    }
     }

@@ -1,5 +1,4 @@
-﻿using BDArmory.Core.Enum;
-using BDArmory.Core.Services;
+﻿using BDArmory.Events;
 
 namespace BDArmory.Core.Extension
 {
@@ -13,8 +12,8 @@ namespace BDArmory.Core.Extension
 #if DEBUG
             DisplayDebugMessage("Adding " + damage + " damage to part " + p.name);
 #endif
-            Dependencies.Get<DamageService>().AddDamageToPart(p, damage);
-            Dependencies.Get<DamageService>().PublishDamageEvent(p, damage, DamageOperation.Add);
+            Dependencies.Get<IDamageService>().AddDamageToPart(p, damage);
+            Dependencies.Get<DamageEventService>().PublishDamageEvent(p, damage, DamageOperation.Add);
         }
 
         public static void SetDamage(this Part p, double damage)
@@ -22,8 +21,8 @@ namespace BDArmory.Core.Extension
 #if DEBUG
             DisplayDebugMessage("Setting " + damage + " damage to part " + p.name);
 #endif
-            Dependencies.Get<DamageService>().SetDamageToPart(p, damage);
-            Dependencies.Get<DamageService>().PublishDamageEvent(p, damage, DamageOperation.Add);
+            Dependencies.Get<IDamageService>().SetDamageToPart(p, damage);
+            Dependencies.Get<DamageEventService>().PublishDamageEvent(p, damage, DamageOperation.Add);
         }
 
         private static void DisplayDebugMessage(string message)

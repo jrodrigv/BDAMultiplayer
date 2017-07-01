@@ -23,7 +23,5 @@ C:\Users\jesus\Source\Repos\BDArmory_JRODRIGV\BDArmory\bin\Release\Mono.Cecil.dl
 C:\Users\jesus\Source\Repos\BDArmory_JRODRIGV\BDArmory\bin\Release\TDx.TDxInput.dll
 C:\Users\jesus\Source\Repos\BDArmory_JRODRIGV\BDArmory\bin\Release\Mono.Security.dll
 C:\Users\jesus\Source\Repos\BDArmory_JRODRIGV\BDArmory\bin\Release\UnityEngine.xml
-C:\Users\jesus\Source\Repos\BDArmory_JRODRIGV\BDArmory\obj\Release\BDArmory.csprojResolveAssemblyReference.cache
-C:\Users\jesus\Source\Repos\BDArmory_JRODRIGV\BDArmory\obj\Release\BDArmory.dll
 C:\Users\jesus\Source\Repos\BDArmory_JRODRIGV\BDArmory\bin\Release\BDArmory.Core.dll
 C:\Users\jesus\Source\Repos\BDArmory_JRODRIGV\BDArmory\bin\Release\BDArmory.Core.pdb

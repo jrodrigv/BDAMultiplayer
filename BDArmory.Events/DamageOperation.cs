@@ -1,4 +1,4 @@
-﻿namespace BDArmory.Core.Enum
+﻿namespace BDArmory.Events
 {
     public enum DamageOperation
     {

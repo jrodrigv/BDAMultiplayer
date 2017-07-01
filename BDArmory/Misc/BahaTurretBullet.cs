@@ -271,7 +271,7 @@ namespace BDArmory.Misc
 
 							if(bulletType == BulletTypes.Explosive)
 							{
-								ExplosionFX.CreateExplosion(hit.point, radius, blastPower,-1, sourceVessel, rb.velocity.normalized, explModelPath, explSoundPath);
+								ExplosionFx.CreateExplosion(hit.point, radius, blastPower,-1, sourceVessel, explModelPath, explSoundPath);
 							}
 
 							Destroy(gameObject); //destroy bullet on collision
@@ -283,7 +283,7 @@ namespace BDArmory.Misc
 			if(airDetonation && distanceFromStart > detonationRange)
 			{
 				//detonate
-				ExplosionFX.CreateExplosion(transform.position, radius, blastPower,-1, sourceVessel, rb.velocity.normalized, explModelPath, explSoundPath);
+				ExplosionFx.CreateExplosion(transform.position, radius, blastPower,-1, sourceVessel, explModelPath, explSoundPath);
 				Destroy(gameObject); //destroy bullet on collision
 			}
 

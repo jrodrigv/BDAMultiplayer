@@ -1,7 +1,7 @@
 using System;
 using BDArmory.Core;
-using BDArmory.Core.Events;
-using BDArmory.Core.Services;
+using BDArmory.Events;
+using BDArmory.Multiplayer.Handler;
 using BDArmory.Multiplayer.Interface;
 using BDArmory.Multiplayer.Message;
 using BDArmory.Multiplayer.Utils;
@@ -28,6 +28,8 @@ namespace BDArmory.Multiplayer
             try
             {
                 Dependencies.Register<IBdaMessageHandler<DamageEventArgs>, DamageMessageHandler>();
+                Dependencies.Register<IBdaMessageHandler<ExplosionEventArgs>, ExplosionMessageHandler>();
+
                 SystemsContainer.Get<ModApiSystem>().RegisterFixedUpdateModHandler(ModName, HandlerFunction);
                 SuscribeToCoreEvents();
 
@@ -54,11 +56,16 @@ namespace BDArmory.Multiplayer
             {
                Dependencies.Get<IBdaMessageHandler<DamageEventArgs>>().ProcessMessage((DamageEventArgs) messageReceived.Content);
             }
+            else if (messageReceived.Content is ExplosionEventArgs)
+            {
+                Dependencies.Get<IBdaMessageHandler<ExplosionEventArgs>>().ProcessMessage((ExplosionEventArgs)messageReceived.Content);
+            }
         }
 
         private void SuscribeToCoreEvents()
         {
-           Dependencies.Get<DamageService>().OnActionExecuted += OnActionExecuted;
+            Dependencies.Get<DamageEventService>().OnActionExecuted += OnActionExecuted;
+            Dependencies.Get<ExplosionEventService>().OnActionExecuted += OnActionExecuted;
         }
 
         private void OnActionExecuted(object sender, EventArgs eventArgs)
@@ -78,10 +85,5 @@ namespace BDArmory.Multiplayer
         {
             
         }
-    }
-
-    internal interface IBdaMessageHandler<in T> where T : class, new()
-    {
-        void ProcessMessage(T message);
     }
 }

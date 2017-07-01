@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using BDArmory.Core;
 using BDArmory.Core.Extension;
+using BDArmory.Events;
 using BDArmory.Misc;
 using BDArmory.Parts;
 using BDArmory.UI;
@@ -8,22 +10,22 @@ using UnityEngine;
 
 namespace BDArmory.FX
 {
-    public class ExplosionFX : MonoBehaviour
+    public class ExplosionFx : MonoBehaviour
     {
-        KSPParticleEmitter[] pEmitters;
-        Light lightFX;
-        float startTime;
-        public AudioClip exSound;
-        public AudioSource audioSource;
-        float maxTime;
+        KSPParticleEmitter[] _pEmitters;
+        Light _lightFx;
+        float _startTime;
+        public AudioClip ExSound;
+        public AudioSource AudioSource;
+        float _maxTime;
 
-        public float range;
+        public float Range;
 
         void Start()
         {
-            startTime = Time.time;
-            pEmitters = gameObject.GetComponentsInChildren<KSPParticleEmitter>();
-            List<KSPParticleEmitter>.Enumerator pe = pEmitters.ToList().GetEnumerator();
+            _startTime = Time.time;
+            _pEmitters = gameObject.GetComponentsInChildren<KSPParticleEmitter>();
+            List<KSPParticleEmitter>.Enumerator pe = _pEmitters.ToList().GetEnumerator();
             while (pe.MoveNext())
             {
                 if (pe.Current == null) continue;
@@ -31,31 +33,31 @@ namespace BDArmory.FX
                 
                 pe.Current.emit = true;
 
-                if (pe.Current.maxEnergy > maxTime)
+                if (pe.Current.maxEnergy > _maxTime)
                 {
-                    maxTime = pe.Current.maxEnergy;
+                    _maxTime = pe.Current.maxEnergy;
                 }
             }
             pe.Dispose();
 
-            lightFX = gameObject.AddComponent<Light>();
-            lightFX.color = Misc.Misc.ParseColor255("255,238,184,255");
-            lightFX.intensity = 8;
-            lightFX.range = range*3f;
-            lightFX.shadows = LightShadows.None;
+            _lightFx = gameObject.AddComponent<Light>();
+            _lightFx.color = Misc.Misc.ParseColor255("255,238,184,255");
+            _lightFx.intensity = 8;
+            _lightFx.range = Range*3f;
+            _lightFx.shadows = LightShadows.None;
 
 
-            audioSource.volume = BDArmorySettings.BDARMORY_WEAPONS_VOLUME;
+            AudioSource.volume = BDArmorySettings.BDARMORY_WEAPONS_VOLUME;
 
-            audioSource.PlayOneShot(exSound);
+            AudioSource.PlayOneShot(ExSound);
         }
 
         void FixedUpdate()
         {
-            lightFX.intensity -= 12*Time.fixedDeltaTime;
-            if (Time.time - startTime > 0.2f)
+            _lightFx.intensity -= 12*Time.fixedDeltaTime;
+            if (Time.time - _startTime > 0.2f)
             {
-                List<KSPParticleEmitter>.Enumerator pe = pEmitters.ToList().GetEnumerator();
+                List<KSPParticleEmitter>.Enumerator pe = _pEmitters.ToList().GetEnumerator();
                 while (pe.MoveNext())
                 {
                     if (pe.Current == null) continue;
@@ -64,39 +66,50 @@ namespace BDArmory.FX
                 pe.Dispose();
             }
 
-            if (Time.time - startTime > maxTime)
+            if (Time.time - _startTime > _maxTime)
             {
                 Destroy(gameObject);
             }
         }
 
-        public static void CreateExplosion(Vector3 position, float radius, float power, float heat, Vessel sourceVessel,
-            Vector3 direction, string explModelPath, string soundPath)
+        public static GameObject CreateExplosionAnimation(Vector3 position, float radius, float power, string explModelPath, string soundPath, bool shouldNotify = true)
         {
-            GameObject go;
-            AudioClip soundClip;
+            if (shouldNotify)
+            {
+                Dependencies.Get<ExplosionEventService>().PublishExplosionEvent(position,radius,power,explModelPath,soundPath);
+            }
 
-            go = GameDatabase.Instance.GetModel(explModelPath);
-            soundClip = GameDatabase.Instance.GetAudioClip(soundPath);
+            GameObject go = GameDatabase.Instance.GetModel(explModelPath);
+            AudioClip soundClip = GameDatabase.Instance.GetAudioClip(soundPath);
 
 
             Quaternion rotation = Quaternion.LookRotation(VectorUtils.GetUpDirection(position));
-            GameObject newExplosion = (GameObject) Instantiate(go, position, rotation);
+            GameObject newExplosion = (GameObject)Instantiate(go, position, rotation);
             newExplosion.SetActive(true);
-            ExplosionFX eFx = newExplosion.AddComponent<ExplosionFX>();
-            eFx.exSound = soundClip;
-            eFx.audioSource = newExplosion.AddComponent<AudioSource>();
-            eFx.audioSource.minDistance = 200;
-            eFx.audioSource.maxDistance = 5500;
-            eFx.audioSource.spatialBlend = 1;
-            eFx.range = radius;
+            ExplosionFx eFx = newExplosion.AddComponent<ExplosionFx>();
+            eFx.ExSound = soundClip;
+            eFx.AudioSource = newExplosion.AddComponent<AudioSource>();
+            eFx.AudioSource.minDistance = 200;
+            eFx.AudioSource.maxDistance = 5500;
+            eFx.AudioSource.spatialBlend = 1;
+            eFx.Range = radius;
 
             if (power <= 5)
             {
-                eFx.audioSource.minDistance = 4f;
-                eFx.audioSource.maxDistance = 3000;
-                eFx.audioSource.priority = 9999;
+                eFx.AudioSource.minDistance = 4f;
+                eFx.AudioSource.maxDistance = 3000;
+                eFx.AudioSource.priority = 9999;
             }
+            return newExplosion;
+        }
+
+
+        public static void CreateExplosion(Vector3 position, float radius, float power, float heat, Vessel sourceVessel
+            , string explModelPath, string soundPath)
+        {
+
+            GameObject newExplosion = CreateExplosionAnimation(position, radius, power, explModelPath, soundPath);
+
             IEnumerator<KSPParticleEmitter> pe = newExplosion.GetComponentsInChildren<KSPParticleEmitter>().Cast<KSPParticleEmitter>()
                 .GetEnumerator();
             while (pe.MoveNext())
@@ -180,14 +193,14 @@ namespace BDArmory.FX
             }
         }
 
-        public static List<Part> ignoreParts = new List<Part>();
-        public static List<DestructibleBuilding> ignoreBuildings = new List<DestructibleBuilding>();
+        public static List<Part> IgnoreParts = new List<Part>();
+        public static List<DestructibleBuilding> IgnoreBuildings = new List<DestructibleBuilding>();
 
 		public static void DoExplosionDamage(Vector3 position, float power, float heat, float maxDistance, Vessel sourceVessel)
 		{
 			if(BDArmorySettings.DRAW_DEBUG_LABELS) Debug.Log("[BDArmory]: ======= Doing explosion sphere =========");
-			ignoreParts.Clear();
-			ignoreBuildings.Clear();
+			IgnoreParts.Clear();
+			IgnoreBuildings.Clear();
 
             // Unity does not like linq.  changing to an enumeration to extract needed lists.
             #region Old code (For reference.  remove when satisfied new code works as expected)
@@ -224,7 +237,7 @@ namespace BDArmory.FX
 		        {
 		            if (p.Current == null) continue;
 		            if ((p.Current.transform.position - position).magnitude >= maxDistance) continue;
-		            DoExplosionRay(new Ray(position, p.Current.transform.TransformPoint(p.Current.CoMOffset) - position), power, heat, maxDistance, ref ignoreParts, ref ignoreBuildings, sourceVessel);
+		            DoExplosionRay(new Ray(position, p.Current.transform.TransformPoint(p.Current.CoMOffset) - position), power, heat, maxDistance, ref IgnoreParts, ref IgnoreBuildings, sourceVessel);
 		        }
                 p.Dispose();
 		    }
@@ -236,7 +249,7 @@ namespace BDArmory.FX
 				if(bldg.Current == null) continue;
 				if((bldg.Current.transform.position - position).magnitude < maxDistance * 1000)
 				{
-					DoExplosionRay(new Ray(position, bldg.Current.transform.position - position), power, heat, maxDistance, ref ignoreParts, ref ignoreBuildings);
+					DoExplosionRay(new Ray(position, bldg.Current.transform.position - position), power, heat, maxDistance, ref IgnoreParts, ref IgnoreBuildings);
 				}
 			}
             bldg.Dispose();

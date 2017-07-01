@@ -1,10 +1,9 @@
 using System.Linq;
 using BDArmory.Core;
-using BDArmory.Core.Enum;
-using BDArmory.Core.Events;
-using BDArmory.Core.Services;
+using BDArmory.Events;
+using BDArmory.Multiplayer.Interface;
 
-namespace BDArmory.Multiplayer
+namespace BDArmory.Multiplayer.Handler
 {
     internal class DamageMessageHandler : IBdaMessageHandler<DamageEventArgs>
     {
@@ -23,11 +22,11 @@ namespace BDArmory.Multiplayer
 
             if (message.Operation == DamageOperation.Add)
             {
-                Dependencies.Get<DamageService>().AddDamageToPart(part, message.Damage);
+                Dependencies.Get<IDamageService>().AddDamageToPart(part, message.Damage);
             }
             else
             {
-                Dependencies.Get<DamageService>().SetDamageToPart(part, message.Damage);
+                Dependencies.Get<IDamageService>().SetDamageToPart(part, message.Damage);
             }
             
         }

@@ -80,8 +80,8 @@ namespace BDArmory.Armor
             resources.Dispose();
             explodeScale /= 100;
             part.explode();
-            ExplosionFX.CreateExplosion(part.partTransform.position, explodeScale*blastRadius, explodeScale*blastPower*2,
-                explodeScale*blastHeat, part.vessel, FlightGlobals.upAxis, explModelPath, explSoundPath);
+            ExplosionFx.CreateExplosion(part.partTransform.position, explodeScale*blastRadius, explodeScale*blastPower*2,
+                explodeScale*blastHeat, part.vessel, explModelPath, explSoundPath);
         }
 
         public static BDArmor GetArmor(Collider collider, Part hitPart)

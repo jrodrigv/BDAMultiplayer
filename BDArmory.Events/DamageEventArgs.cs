@@ -1,7 +1,6 @@
 ﻿using System;
-using BDArmory.Core.Enum;
 
-namespace BDArmory.Core.Events
+namespace BDArmory.Events
 {
     [Serializable]
     public class DamageEventArgs : EventArgs

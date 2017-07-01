@@ -472,8 +472,8 @@ namespace BDArmory
                         {
                             if (bulletType == PooledBulletTypes.Explosive)
                             {
-                                ExplosionFX.CreateExplosion(hit.point - (ray.direction*0.1f), radius, blastPower,
-                                    blastHeat, sourceVessel, currentVelocity.normalized, explModelPath, explSoundPath);
+                                ExplosionFx.CreateExplosion(hit.point - (ray.direction*0.1f), radius, blastPower,
+                                    blastHeat, sourceVessel, explModelPath, explSoundPath);
                             }
                             else if (BDArmorySettings.BULLET_HITS)
                             {
@@ -521,8 +521,7 @@ namespace BDArmory
             if (bulletType == PooledBulletTypes.Explosive && airDetonation && distanceFromStart > detonationRange)
             {
                 //detonate
-                ExplosionFX.CreateExplosion(transform.position, radius, blastPower, blastHeat, sourceVessel,
-                    currentVelocity.normalized, explModelPath, explSoundPath);
+                ExplosionFx.CreateExplosion(transform.position, radius, blastPower, blastHeat, sourceVessel, explModelPath, explSoundPath);
                 //GameObject.Destroy(gameObject); //destroy bullet on collision
                 KillBullet();
                 return;

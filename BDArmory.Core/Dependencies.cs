@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace BDArmory.Core
 {
-    public static  class Dependencies
+    public static class Dependencies
     {
         private static readonly Dictionary<Type, object> Systems = new Dictionary<Type, object>();
         public static void Register<T,TN>()

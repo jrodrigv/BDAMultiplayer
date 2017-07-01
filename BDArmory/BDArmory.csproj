@@ -157,6 +157,10 @@
       <Project>{A6F1753E-9570-4C40-AF72-A179890582E5}</Project>
       <Name>BDArmory.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\BDArmory.Events\BDArmory.Events.csproj">
+      <Project>{6DB74D09-78D4-4579-B63C-BEB4EFF21D25}</Project>
+      <Name>BDArmory.Events</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Shaders\GrayscaleEffectShader.shader" />
