@@ -234,7 +234,7 @@ namespace BDArmory.UI
                 float angle = Vector3.Angle(missilePosition, cam.Current.groundTargetPosition - position);
                 if (!(angle < maxOffBoresight) || !(angle < smallestAngle) ||
                     !CanSeePosition(cam.Current.groundTargetPosition, vessel.transform.position,
-                        missilePosition)) continue;
+                        (vessel.transform.position+missilePosition))) continue;
 
                 smallestAngle = angle;
                 finalCam = cam.Current;
@@ -250,7 +250,7 @@ namespace BDArmory.UI
                 return false;
             }
 
-            float dist = 10000;
+            float dist = BDArmorySettings.MAX_GUARD_VISUAL_RANGE; //replaced constant 10km with actual configured visual range
             Ray ray = new Ray(missilePosition, groundTargetPosition - missilePosition);
             ray.origin += 10 * ray.direction;
             RaycastHit rayHit;
@@ -716,7 +716,7 @@ namespace BDArmory.UI
 			foreach(TargetInfo target in TargetDatabase[team])
 			{
 				if(target.numFriendliesEngaging >= 2) continue;
-				if(target && target.Vessel && !target.isLanded && !target.isMissile)
+				if(target && target.Vessel && target.isFlying && !target.isMissile)
 				{
                     Vector3 targetRelPos = target.Vessel.vesselTransform.position - mf.vessel.vesselTransform.position;
                     float targetSuitability = Vector3.Dot(targetRelPos.normalized, mf.vessel.ReferenceTransform.up);       //prefer targets ahead to those behind
@@ -739,7 +739,7 @@ namespace BDArmory.UI
             BDArmorySettings.BDATeams team = mf.team ? BDArmorySettings.BDATeams.B : BDArmorySettings.BDATeams.A;
             TargetInfo finalTarget = null;
 
-            float finalTargetSuitability = 0;        //this will determine how suitable the target is, based on where it is located relative to the targeting vessel and how far it is
+            float finalTargetSuitability = 0;    //this will determine how suitable the target is, based on where it is located relative to the targeting vessel and how far it is
 
             List<TargetInfo>.Enumerator target = TargetDatabase[team].GetEnumerator();
             while (target.MoveNext())
