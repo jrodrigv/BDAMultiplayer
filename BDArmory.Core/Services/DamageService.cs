@@ -1,8 +1,7 @@
-﻿using BDArmory.Core.Events;
-
+﻿
 namespace BDArmory.Core.Services
 {
-    public abstract class DamageService : NotificableService<DamageEventArgs>
+    public abstract class DamageService
     {
         public abstract void ReduceArmor_svc(Part p, float armorMass);
 

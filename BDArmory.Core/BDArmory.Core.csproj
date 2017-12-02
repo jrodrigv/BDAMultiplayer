@@ -38,15 +38,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IDamageService.cs" />
     <Compile Include="TemperatureDamageService.cs" />
-    <Compile Include="Events\DamageEventArgs.cs" />
     <Compile Include="Extension\VesselExtensions.cs" />
     <Compile Include="Module\ArmorUtils.cs" />
     <Compile Include="Module\BDArmor.cs" />
     <Compile Include="Module\HitpointTracker.cs" />
     <Compile Include="Services\DamageService.cs" />
-    <Compile Include="Interface\INotificableService.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Services\NotificableService.cs" />
     <Compile Include="Services\ModuleDamageService.cs" />
     <Compile Include="Utils\BlastPhysicsUtils.cs" />
     <Compile Include="Utils\BulletPhysics.cs" />
@@ -76,6 +72,10 @@
       <Project>{6DB74D09-78D4-4579-B63C-BEB4EFF21D25}</Project>
       <Name>BDArmory.Events</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Events\" />
+    <Folder Include="Interface\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

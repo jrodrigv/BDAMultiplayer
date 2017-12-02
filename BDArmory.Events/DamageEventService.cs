@@ -2,7 +2,7 @@
 {
     public class DamageEventService : NotificableService
     {
-        public void PublishDamageEvent(Part p, double damage, DamageOperation operation)
+        public void PublishDamageEvent(Part p, float damage, DamageOperation operation)
         {
             PublishEvent(new DamageEventArgs
             {

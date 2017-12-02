@@ -159,7 +159,6 @@ namespace BDArmory.Core.Extension
         public static void Destroy(this Part p)
         {
             Dependencies.Get<DamageService>().SetDamageToPart_svc(p,-1);
-            Dependencies.Get<DamageEventService>().PublishDamageEvent(p, damage, DamageOperation.Set);
         }
 
         public static bool HasArmor(this Part p)

@@ -1,7 +1,7 @@
 ﻿using System;
-using BDArmory.Core.Enum;
-using BDArmory.Core.Events;
+
 using BDArmory.Core.Module;
+using BDArmory.Events;
 using UnityEngine;
 
 namespace BDArmory.Core.Services
@@ -14,6 +14,7 @@ namespace BDArmory.Core.Services
 
             damageModule.ReduceArmor(armorMass);
 
+          
             PublishEvent(new DamageEventArgs()
             {
                 VesselId = p.vessel.GetInstanceID(),

@@ -182,7 +182,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\rcsShader.shader" />
-    <None Include="packages.config" />
   </ItemGroup>
   <PropertyGroup>
     <PostBuildEvent>@echo $(Targetname)
