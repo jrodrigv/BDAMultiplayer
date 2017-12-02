@@ -6,8 +6,8 @@ namespace BDArmory.Core
     public class Bootstrapper :MonoBehaviour
     {
         private void Awake()
-        {
-            Dependencies.Register<IDamageService, TemperatureDamageService>();
+        {           
+            Dependencies.Register<DamageService, ModuleDamageService>();
         }
     }
 }

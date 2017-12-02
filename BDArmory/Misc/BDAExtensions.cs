@@ -14,7 +14,8 @@ namespace BDArmory.Misc
 		{
 			return (from avPart in parts.Where(p => p.partPrefab)
 				let missile = avPart.partPrefab.GetComponent<MissileLauncher>()
-				let moduleWeapon = avPart.partPrefab.GetComponent<ModuleWeapon>()
+			    let mmissile = avPart.partPrefab.GetComponent<BDModularGuidance>()
+                let moduleWeapon = avPart.partPrefab.GetComponent<ModuleWeapon>()
 				let missileFire = avPart.partPrefab.GetComponent<MissileFire>()
 				let moduleRadar = avPart.partPrefab.GetComponent<ModuleRadar>()
 				let cm = avPart.partPrefab.GetComponent<CMDropper>()
@@ -22,7 +23,7 @@ namespace BDArmory.Misc
 				let rocket = avPart.partPrefab.GetComponent<RocketLauncher>()
 				let otherModule = avPart.partPrefab.GetComponent<BDACategoryModule>()
 				where missile || moduleWeapon || missileFire || moduleRadar || cm || tgp || rocket || otherModule
-		        select avPart).ToList();
+		        select avPart).AsEnumerable();
 		}
 	}
 }

@@ -28,30 +28,47 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>6</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Bootstrapper.cs" />
+    <Compile Include="BuildingDamage.cs" />
     <Compile Include="Dependencies.cs" />
     <Compile Include="Extension\PartExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="IDamageService.cs" />
     <Compile Include="TemperatureDamageService.cs" />
+    <Compile Include="Events\DamageEventArgs.cs" />
+    <Compile Include="Extension\VesselExtensions.cs" />
+    <Compile Include="Module\ArmorUtils.cs" />
+    <Compile Include="Module\BDArmor.cs" />
+    <Compile Include="Module\HitpointTracker.cs" />
+    <Compile Include="Services\DamageService.cs" />
+    <Compile Include="Interface\INotificableService.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\NotificableService.cs" />
+    <Compile Include="Services\ModuleDamageService.cs" />
+    <Compile Include="Utils\BlastPhysicsUtils.cs" />
+    <Compile Include="Utils\BulletPhysics.cs" />
+    <Compile Include="Utils\DebugUtils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\Dependencies\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\BDArmory\LocalDev\Refs\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="KSPAssets, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\KSPAssets.dll</HintPath>
+      <HintPath>..\BDArmory\LocalDev\Refs\KSPAssets.dll</HintPath>
     </Reference>
+    <Reference Include="System" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\UnityEngine.dll</HintPath>
+      <HintPath>..\BDArmory\LocalDev\Refs\UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Dependencies\UnityEngine.UI.dll</HintPath>
+      <HintPath>..\BDArmory\LocalDev\Refs\UnityEngine.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

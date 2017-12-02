@@ -18,15 +18,14 @@ namespace BDArmory.Control
         List<BDModulePilotAI> wingmen;
         [KSPField(isPersistant = true)] public string savedWingmen = string.Empty;
 
-        [KSPField(guiActive = false, guiActiveEditor = true, guiName = "")] public string guiTitle = "WingCommander:";
+        //[KSPField(guiActive = false, guiActiveEditor = false, guiName = "")]
+        public string guiTitle = "WingCommander:";
 
-        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true, guiName = "Spread"),
-         UI_FloatRange(minValue = 20f, maxValue = 200f, stepIncrement = 1, scene = UI_Scene.Editor)] public float spread
-            = 50;
+        //[KSPField(isPersistant = false, guiActive = false, guiActiveEditor = true, guiName = "Spread"), UI_FloatRange(minValue = 20f, maxValue = 200f, stepIncrement = 1, scene = UI_Scene.Editor)]
+        public float spread = 50;
 
-        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true, guiName = "Lag"),
-         UI_FloatRange(minValue = 0f, maxValue = 100f, stepIncrement = 1, scene = UI_Scene.Editor)] public float lag =
-            10;
+        //[KSPField(isPersistant = false, guiActive = false, guiActiveEditor = true, guiName = "Lag"), UI_FloatRange(minValue = 0f, maxValue = 100f, stepIncrement = 1, scene = UI_Scene.Editor)]
+        public float lag = 10;
 
         [KSPField(isPersistant = true)] public bool commandSelf;
 
@@ -214,7 +213,7 @@ namespace BDArmory.Control
             wingmen = new List<BDModulePilotAI>();
 
             if (savedWingmen == string.Empty) return;
-            List<string>.Enumerator wingIDs = savedWingmen.Split(new char[] {','}).ToList().GetEnumerator();
+            IEnumerator<string> wingIDs = savedWingmen.Split(new char[] {','}).AsEnumerable().GetEnumerator();
             while (wingIDs.MoveNext())
             {
                 List<Vessel>.Enumerator vs = BDATargetManager.LoadedVessels.GetEnumerator();
