@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-namespace BDArmory.Core.Extension
+﻿namespace BDArmory.Core.Extension
 {
     public static class VesselExtensions
     {

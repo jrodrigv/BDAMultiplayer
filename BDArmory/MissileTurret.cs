@@ -5,7 +5,6 @@ using BDArmory.Parts;
 using BDArmory.Radar;
 using UniLinq;
 using UnityEngine;
-using BDArmory.UI;
 
 namespace BDArmory
 {

@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using BDArmory.Parts;
-using BDArmory.UI;
 using UnityEngine;
 
 namespace BDArmory.CounterMeasure

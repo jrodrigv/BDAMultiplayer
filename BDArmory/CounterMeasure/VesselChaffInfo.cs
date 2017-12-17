@@ -1,5 +1,4 @@
-﻿using BDArmory.UI;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace BDArmory.CounterMeasure
 {

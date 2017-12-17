@@ -1,9 +1,6 @@
-using System;
-using BDArmory.Core.Enum;
 using BDArmory.Core.Extension;
 using BDArmory.Core.Utils;
 using BDArmory.FX;
-using BDArmory.UI;
 using UnityEngine;
 
 namespace BDArmory.Parts

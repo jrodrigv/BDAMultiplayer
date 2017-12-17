@@ -9,8 +9,10 @@ namespace BDArmory.Multiplayer.Handler
     {
         public void ProcessMessage(ExplosionEventArgs message)
         {
-            ExplosionFx.CreateExplosionAnimation(new Vector3(message.PositionX, message.PositionY, message.PositionZ),
-                message.Radius, message.Power, message.ExplosionModelPath, message.SoundPath, false);
+            //TODO: Multiplayer fix explosion animations
+
+            //ExplosionFx.CreateExplosionAnimation(new Vector3(message.PositionX, message.PositionY, message.PositionZ),
+            //    message.Radius, message.Power, message.ExplosionModelPath, message.SoundPath, false);
         }
     }
 }

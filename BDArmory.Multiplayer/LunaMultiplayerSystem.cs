@@ -12,7 +12,7 @@ using UnityEngine;
 namespace BDArmory.Multiplayer
 {
     [KSPAddon(KSPAddon.Startup.Flight, false)]
-    public class LunaMultiplayerSytem : MonoBehaviour, IMultiplayerSystem
+    public class LunaMultiplayerSystem : MonoBehaviour, IMultiplayerSystem
     {
         private const string ModName = "BDArmory";
         public const bool Relay = true;

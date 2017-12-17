@@ -24,7 +24,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>%25%28SolutionDir%29\Binaries\</OutputPath>
+    <OutputPath>$(SolutionDir)\Binaries\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -33,11 +33,13 @@
     <Reference Include="Assembly-CSharp">
       <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_DEV_13\KSP_x64_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="LunaClient">
-      <HintPath>..\BDArmory\LocalDev\Refs\LunaClient.dll</HintPath>
+    <Reference Include="LunaClient, Version=0.0.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_DEV_131\GameData\LunaMultiPlayer\Plugins\LunaClient.dll</HintPath>
     </Reference>
-    <Reference Include="LunaCommon">
-      <HintPath>..\BDArmory\LocalDev\Refs\LunaCommon.dll</HintPath>
+    <Reference Include="LunaCommon, Version=0.0.9.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_DEV_131\GameData\LunaMultiPlayer\Plugins\LunaCommon.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_DEV_13\KSP_x64_Data\Managed\UnityEngine.dll</HintPath>
@@ -49,14 +51,14 @@
     <Compile Include="Handler\ExplosionMessageHandler.cs" />
     <Compile Include="Interface\IBdaMessageHandler.cs" />
     <Compile Include="Interface\IMultiplayerSystem.cs" />
-    <Compile Include="LunaMultiplayerSytem.cs" />
+    <Compile Include="LunaMultiplayerSystem.cs" />
     <Compile Include="Message\BdaMessage.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\BinaryUtils.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\BDArmory.Core\BDArmory.Core.csproj">
-      <Project>{A6F1753E-9570-4C40-AF72-A179890582E5}</Project>
+      <Project>{a6f1753e-9570-4c40-af72-a179890582e5}</Project>
       <Name>BDArmory.Core</Name>
     </ProjectReference>
     <ProjectReference Include="..\BDArmory.Events\BDArmory.Events.csproj">

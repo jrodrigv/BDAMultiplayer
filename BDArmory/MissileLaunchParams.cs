@@ -1,7 +1,6 @@
 ﻿using BDArmory.Core;
 using BDArmory.Core.Extension;
 using BDArmory.Parts;
-using BDArmory.UI;
 using UnityEngine;
 
 namespace BDArmory

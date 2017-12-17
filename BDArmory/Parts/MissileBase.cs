@@ -9,7 +9,6 @@ using BDArmory.UI;
 using UnityEngine;
 using System.Text;
 using BDArmory.Core;
-using BDArmory.Core.Enum;
 
 namespace BDArmory.Parts
 {

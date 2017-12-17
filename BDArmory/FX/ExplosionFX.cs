@@ -2,13 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using BDArmory.Core;
 using BDArmory.Core.Extension;
-using BDArmory.Events;
 using BDArmory.Misc;
-using BDArmory.UI;
 using UnityEngine;
 using System;
-using BDArmory.Core;
-using BDArmory.Core.Enum;
 using BDArmory.Core.Utils;
 
 namespace BDArmory.FX

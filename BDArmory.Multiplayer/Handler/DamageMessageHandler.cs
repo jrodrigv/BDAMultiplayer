@@ -1,5 +1,6 @@
 using System.Linq;
 using BDArmory.Core;
+using BDArmory.Core.Interface;
 using BDArmory.Events;
 using BDArmory.Multiplayer.Interface;
 

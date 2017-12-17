@@ -1,8 +1,4 @@
-using System;
-using BDArmory.Core.Extension;
-using BDArmory.FX;
-using BDArmory.UI;
-using UnityEngine;
+
 
 /*
 namespace BDArmory.Misc

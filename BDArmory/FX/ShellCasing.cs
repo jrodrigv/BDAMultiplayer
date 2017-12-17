@@ -1,5 +1,4 @@
 using BDArmory.Core;
-using BDArmory.UI;
 using UnityEngine;
 
 namespace BDArmory.FX

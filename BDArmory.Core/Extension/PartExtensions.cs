@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System;
+using BDArmory.Core.Module;
 using BDArmory.Core.Services;
 using BDArmory.Core.Utils;
 using BDArmory.Events;
@@ -26,10 +27,10 @@ namespace BDArmory.Core.Extension
             }
             else
             {
-                Dependencies.Get<DamageService>().AddDamageToPart_svc(p, damage);
+                Dependencies.Get<Interface.IDamageService>().AddDamageToPart(p, damage);
                 if (BDArmorySettings.DRAW_DEBUG_LABELS)
                     Debug.Log("[BDArmory]: Standard Hitpoints Applied : " + damage);
-                Dependencies.Get<DamageEventService>().PublishDamageEvent(p, damage, DamageOperation.Add);
+               
             }
 
         }
@@ -157,8 +158,8 @@ namespace BDArmory.Core.Extension
             //////////////////////////////////////////////////////////
             // Apply HitPoints Ballistic
             //////////////////////////////////////////////////////////
-            Dependencies.Get<DamageService>().AddDamageToPart_svc(p, damage_);
-            Dependencies.Get<DamageEventService>().PublishDamageEvent(p, damage, DamageOperation.Add);
+            Dependencies.Get<Interface.IDamageService>().AddDamageToPart(p, damage_);
+            Dependencies.Get<DamageEventService>().PublishDamageEvent(p, damage_, DamageOperation.Add);
             if (BDArmorySettings.DRAW_DEBUG_LABELS)
             {
                 Debug.Log("[BDArmory]: mass: " + mass + " caliber: " + caliber + " multiplier: " + multiplier + " velocity: " + impactVelocity + " penetrationfactor: " + penetrationfactor);
@@ -176,7 +177,7 @@ namespace BDArmory.Core.Extension
             // Apply Hitpoints / Explosive
             //////////////////////////////////////////////////////////
 
-            Dependencies.Get<DamageService>().AddDamageToPart_svc(p, damage);
+            Dependencies.Get<Interface.IDamageService>().AddDamageToPart(p, damage);
             if (BDArmorySettings.DRAW_DEBUG_LABELS)
                 Debug.Log("[BDArmory]: Explosive Hitpoints Applied to " + p.name + ": " + Math.Round(damage, 2));
         }
@@ -184,13 +185,13 @@ namespace BDArmory.Core.Extension
         /// <summary>
         /// Kerbal Hitpoint Damage
         /// </summary>
-        public static void ApplyHitPoints(KerbalEVA kerbal, float damage)
+        private static void ApplyHitPoints(KerbalEVA kerbal, float damage)
         {
             //////////////////////////////////////////////////////////
             // Apply Hitpoints / Kerbal
             //////////////////////////////////////////////////////////
 
-            Dependencies.Get<DamageService>().AddDamageToKerbal_svc(kerbal, damage);
+            Dependencies.Get<Interface.IDamageService>().AddDamageToKerbal(kerbal, damage);
             if (BDArmorySettings.DRAW_DEBUG_LABELS)
                 Debug.Log("[BDArmory]: Hitpoints Applied to " + kerbal.name + ": " + Math.Round(damage, 2));
 
@@ -209,29 +210,19 @@ namespace BDArmory.Core.Extension
 
         public static void Destroy(this Part p)
         {
-            Dependencies.Get<DamageService>().SetDamageToPart_svc(p,-1);
+            Dependencies.Get<Interface.IDamageService>().SetDamageToPart(p,-1);
         }
 
         public static bool HasArmor(this Part p)
         {
             return p.GetArmorThickness() > 15f;
         }
-
-        public static float Damage(this Part p)
-         {		
-             return Dependencies.Get<DamageService>().GetPartDamage_svc(p);		
-         }		
- 		
-        public static float MaxDamage(this Part p)
-         {		
-             return Dependencies.Get<DamageService>().GetMaxPartDamage_svc(p);		
-         }
-
+	
         public static void ReduceArmor(this Part p, double massToReduce)
         {
             if (!p.HasArmor()) return;
             massToReduce = Math.Max(0.10, Math.Round(massToReduce, 2));
-            Dependencies.Get<DamageService>().ReduceArmor_svc(p, (float) massToReduce );
+            Dependencies.Get<Interface.IDamageService>().ReduceArmor(p, (float) massToReduce );
 
             if (BDArmorySettings.DRAW_DEBUG_LABELS)
             {
@@ -241,17 +232,13 @@ namespace BDArmory.Core.Extension
         
         public static float GetArmorThickness(this Part p)
         {
-            if (p == null) return 0f;        
-            return Dependencies.Get<DamageService>().GetPartArmor_svc(p);
+            if (p == null) return 0f;
+            return GetPartArmor(p);
         }
 
-        public static float GetArmorPercentage(this Part p)
+        private static float GetPartArmor(Part p)
         {
-            if (p == null) return 0;
-            float armor_ = Dependencies.Get<DamageService>().GetPartArmor_svc(p);
-            float maxArmor_ = Dependencies.Get<DamageService>().GetMaxArmor_svc(p);
-
-            return armor_ / maxArmor_;
+            return Mathf.Max(1, p.Modules.GetModule<HitpointTracker>().Armor);
         }
 
         public static void RefreshAssociatedWindows(this Part part)
@@ -312,7 +299,7 @@ namespace BDArmory.Core.Extension
 
         public static string GetExplodeMode(this Part part)
         {
-            return Dependencies.Get<DamageService>().GetExplodeMode_svc(part);
+            return part.Modules.GetModule<HitpointTracker>().ExplodeMode;
         }
 
         public static bool IgnoreDecal(this Part part)
