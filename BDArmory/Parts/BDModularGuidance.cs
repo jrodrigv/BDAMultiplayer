@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BDArmory.Core;
 using BDArmory.Core.Extension;
 using BDArmory.Misc;
 using BDArmory.Radar;
@@ -162,6 +163,9 @@ namespace BDArmory.Parts
             while (child.MoveNext())
             {
                 if (child.Current == null) continue;
+
+                DisablingExplosives(child.Current);
+
                 IEnumerator<PartResource> resource = child.Current.Resources.GetEnumerator();
                 while (resource.MoveNext())
                 {
@@ -188,6 +192,9 @@ namespace BDArmory.Parts
             while (child.MoveNext())
             {
                 if (child.Current == null) continue;
+
+                SetupExplosive(child.Current);
+
                 IEnumerator<PartResource> resource = child.Current.Resources.GetEnumerator();
                 while (resource.MoveNext())
                 {
@@ -315,8 +322,6 @@ namespace BDArmory.Parts
 
             activeRadarRange = ActiveRadarRange;
 
-            SetInitialDetonationDistance();
-
 
             //TODO: BDModularGuidance should be configurable?
             heatThreshold = 50;
@@ -363,7 +368,6 @@ namespace BDArmory.Parts
                 Events["SwitchTargetingMode"].guiActiveEditor = false;
                 Events["SwitchGuidanceMode"].guiActiveEditor = false;
                 SetMissileTransform();
-                DisablingExplosives();
 
             }
 
@@ -711,10 +715,10 @@ namespace BDArmory.Parts
         [KSPEvent(guiActive = true, guiActiveEditor = false, guiName = "Fire Missile", active = true)]
         public override void FireMissile()
         {
-            if (BDArmorySettings.Instance.ActiveWeaponManager != null &&
-                BDArmorySettings.Instance.ActiveWeaponManager.vessel == vessel)
+            if (BDArmorySetup.Instance.ActiveWeaponManager != null &&
+                BDArmorySetup.Instance.ActiveWeaponManager.vessel == vessel)
             {
-                BDArmorySettings.Instance.ActiveWeaponManager.SendTargetDataToMissile(this);
+                BDArmorySetup.Instance.ActiveWeaponManager.SendTargetDataToMissile(this);
             }
 
             if (!HasFired)
@@ -749,17 +753,12 @@ namespace BDArmory.Parts
 
                 Misc.Misc.RefreshAssociatedWindows(part);
 
-                if (StageToTriggerOnProximity == 0)
-                {
-                     ArmingExplosive();
-                }
-               
                 HasFired = true;
                 DetonationDistanceState = DetonationDistanceStates.NotSafe;
             }
-            if (BDArmorySettings.Instance.ActiveWeaponManager != null)
+            if (BDArmorySetup.Instance.ActiveWeaponManager != null)
             {
-                BDArmorySettings.Instance.ActiveWeaponManager.UpdateList();
+                BDArmorySetup.Instance.ActiveWeaponManager.UpdateList();
             }
         }
 
@@ -828,8 +827,8 @@ namespace BDArmory.Parts
                 ((ModuleAnchoredDecoupler) _targetDecoupler).Decouple();
             }
 
-            if (BDArmorySettings.Instance.ActiveWeaponManager != null)
-                BDArmorySettings.Instance.ActiveWeaponManager.UpdateList();
+            if (BDArmorySetup.Instance.ActiveWeaponManager != null)
+                BDArmorySetup.Instance.ActiveWeaponManager.UpdateList();
         }
 
      
@@ -871,8 +870,6 @@ namespace BDArmory.Parts
 
                 if (StageToTriggerOnProximity != 0)
                 {
-                    ArmingExplosive();
-
                     vessel.ActionGroups.ToggleGroup(
                         (KSPActionGroup) Enum.Parse(typeof(KSPActionGroup), "Custom0" + (int)StageToTriggerOnProximity));
                 }

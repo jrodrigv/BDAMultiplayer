@@ -7,6 +7,8 @@ using BDArmory.Misc;
 using BDArmory.UI;
 using UnityEngine;
 using System;
+using BDArmory.Core;
+using BDArmory.Core.Enum;
 using BDArmory.Core.Utils;
 
 namespace BDArmory.FX
@@ -102,7 +104,7 @@ namespace BDArmory.FX
             List<Part> parstAdded = new List<Part>();
             List<DestructibleBuilding> bulidingAdded = new List<DestructibleBuilding>();
 
-            using (var hitCollidersEnu = Physics.OverlapSphere(Position, Range, 557057).AsEnumerable().GetEnumerator())
+            using (var hitCollidersEnu = Physics.OverlapSphere(Position, Range, 688129).AsEnumerable().GetEnumerator())
             {
                 while (hitCollidersEnu.MoveNext())
                 {
@@ -177,7 +179,7 @@ namespace BDArmory.FX
                 return true;
             }
 
-            return Vector3.Angle(hit.point - Position, direction) < 100f;
+            return Vector3.Angle(direction, (hit.point - Position).normalized) < 100f;
         }
         /// <summary>
         /// This method will calculate if there is valid line of sight between the explosion origin and the specific Part
@@ -191,7 +193,7 @@ namespace BDArmory.FX
         {
             Ray partRay = new Ray(Position, part.transform.position - Position);
 
-            var hits = Physics.RaycastAll(partRay, Range, 557057).AsEnumerable();
+            var hits = Physics.RaycastAll(partRay, Range, 688129).AsEnumerable();
             using (var hitsEnu = hits.OrderBy(x => x.distance).GetEnumerator())
             {
                 while (hitsEnu.MoveNext())
@@ -234,7 +236,7 @@ namespace BDArmory.FX
                 pe.Dispose();
             }
 
-            if (ExplosionEvents.Count == 0 && TimeIndex > Math.Max(MaxTime,particlesMaxEnergy))
+            if (ExplosionEvents.Count == 0 && TimeIndex > Math.Max(MaxTime, particlesMaxEnergy))
             {
                 if (BDArmorySettings.DRAW_DEBUG_LABELS)
                 {
@@ -271,12 +273,10 @@ namespace BDArmory.FX
             DestructibleBuilding building = eventToExecute.Building;
             building.damageDecay = 600f;
             
-
             if (building)
             {
                 var distanceFactor = Mathf.Clamp01((Range - eventToExecute.Distance) / Range);
-                float damageToBuilding = (BDArmorySettings.DMG_MULTIPLIER / 100) * BDArmorySettings.EXP_HEAT_MOD * 
-                                         Power * distanceFactor;
+                float damageToBuilding = (BDArmorySettings.DMG_MULTIPLIER / 100) * BDArmorySettings.EXP_DMG_MOD_BALLISTIC * Power * distanceFactor;
                 damageToBuilding *= 2f;
                 //if (damageToBuilding > building.impactMomentumThreshold * 0.85f)
                // {
@@ -310,7 +310,7 @@ namespace BDArmory.FX
                 {
                     BlastInfo blastInfo =
                         BlastPhysicsUtils.CalculatePartBlastEffects(part, realDistance,
-                            part.vessel.totalMass * 1000f, Power, Range, BDArmorySettings.DMG_MULTIPLIER);
+                            part.vessel.totalMass * 1000f, Power, Range);
 
                     if (BDArmorySettings.DRAW_DEBUG_LABELS)
                     {
@@ -321,7 +321,6 @@ namespace BDArmory.FX
                             " TotalPressure: {" + blastInfo.TotalPressure + "}," +
                             " Damage: {" + blastInfo.Damage + "}," +
                             " EffectiveArea: {" + blastInfo.EffectivePartArea + "}," +
-                            " EffectiveRange: {" + blastInfo.EffectiveDistance + "}," +
                             " Positive Phase duration: {" + blastInfo.PositivePhaseDuration + "}," +
                             " Vessel mass: {" + Math.Round(part.vessel.totalMass * 1000f) + "}," +
                             " TimeIndex: {" + TimeIndex + "}," +
@@ -345,8 +344,8 @@ namespace BDArmory.FX
                         BDArmorySettings.EXP_IMP_MOD,
                         eventToExecute.HitPoint + part.rb.velocity * TimeIndex);
 
-                    part.AddExplosiveDamage(blastInfo.Damage, BDArmorySettings.DMG_MULTIPLIER,
-                        BDArmorySettings.EXP_HEAT_MOD, Caliber, IsMissile);
+                    part.AddExplosiveDamage(blastInfo.Damage,
+                                            Caliber, IsMissile);
                 }
                 else
                 {
@@ -370,12 +369,21 @@ namespace BDArmory.FX
             }
         }        
 
-        public static void CreateExplosion(Vector3 position, float tntMassEquivalent, string explModelPath, string soundPath, bool isMissile = true, float caliber = 0, Part explosivePart = null, Vector3 direction = default(Vector3))
+        public static void CreateExplosion(Vector3 position, float tntMassEquivalent, string explModelPath, string soundPath, bool isMissile = true,float caliber = 0, Part explosivePart = null, Vector3 direction = default(Vector3))
         {
             var go = GameDatabase.Instance.GetModel(explModelPath);
             var soundClip = GameDatabase.Instance.GetAudioClip(soundPath);
 
-            Quaternion rotation = Quaternion.LookRotation(VectorUtils.GetUpDirection(position));
+            Quaternion rotation;
+            if (direction == default(Vector3))
+            {
+                rotation = Quaternion.LookRotation(VectorUtils.GetUpDirection(position));
+            }
+            else
+            {
+                rotation = Quaternion.LookRotation(direction);
+            }
+
             GameObject newExplosion = (GameObject) Instantiate(go, position, rotation);
             ExplosionFx eFx = newExplosion.AddComponent<ExplosionFx>();
             eFx.ExSound = soundClip;
@@ -416,8 +424,10 @@ namespace BDArmory.FX
             //////////////////////////////////////////////////////////
             if (rb == null) return;
             rb.AddForceAtPosition(force , position, ForceMode.VelocityChange);
-            if (BDArmorySettings.DRAW_DEBUG_LABELS)            
-                Debug.Log("[BDArmory]: Force Applied | Explosive : " + Math.Round(force.magnitude, 2));
+            if (BDArmorySettings.DRAW_DEBUG_LABELS)
+            {
+                 Debug.Log("[BDArmory]: Force Applied | Explosive : " + Math.Round(force.magnitude, 2));
+            }   
         }
     }
 
@@ -432,9 +442,6 @@ namespace BDArmory.FX
     {
         public Part Part { get; set; }
         public Vector3 HitPoint { get; set; }
-
-        public bool IsNegativePressure { get; set; }
-
         public float NegativeForce { get; set; }
     }
 

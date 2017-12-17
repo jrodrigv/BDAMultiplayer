@@ -4,13 +4,12 @@ using System.Linq;
 using BDArmory.Armor;
 using BDArmory.Core.Extension;
 using BDArmory.Core.Module;
-using BDArmory.Core.Utils;
 using BDArmory.FX;
 using BDArmory.Parts;
 using BDArmory.Shaders;
-using BDArmory.UI;
 using UnityEngine;
 using System.Collections.Generic;
+using BDArmory.Core;
 
 namespace BDArmory
 {
@@ -67,7 +66,10 @@ namespace BDArmory
 
         Vector3 startPosition;
         public bool airDetonation = false;
-        public float detonationRange = 3500;
+        public bool proximityDetonation = false;
+        public float detonationRange = 5f;
+        public float defaultDetonationRange = 3500f;
+        public float maxAirDetonationRange = 3500f;
         float randomWidthScale = 1;
         LineRenderer bulletTrail;
         Vector3 sourceOriginalV;
@@ -99,17 +101,6 @@ namespace BDArmory
 
         void OnEnable()
         {
-
-            ////////////////////////////////////////////////////////////
-            //gameObject.transform.rotation = transform.rotation;
-            //gameObject.AddComponent<CapsuleCollider>();
-
-            //rb = gameObject.AddComponent<Rigidbody>();
-            //rb.mass = mass;
-            //rb.drag = 0.05f;
-
-            //gameObject.AddComponent<physicalObject>();
-            ////////////////////////////////////////////////////////////
 
             startPosition = transform.position;
             collisionEnabled = false;
@@ -209,7 +200,7 @@ namespace BDArmory
             }
         }
 
-        void Update()
+        void FixedUpdate()
         {
             float distanceFromStart = Vector3.Distance(transform.position, startPosition);
             if (!gameObject.activeInHierarchy)
@@ -218,15 +209,7 @@ namespace BDArmory
             }
 
             //calculate flight time for drag purposes
-            flightTimeElapsed += TimeWarp.deltaTime;
-
-            if (bulletDrop && FlightGlobals.RefFrameIsRotating)
-            {
-                // Gravity???
-                var gravity_ = FlightGlobals.getGeeForceAtPosition(transform.position);
-                //var gravity_ = Physics.gravity;
-                currentVelocity += gravity_ * TimeWarp.deltaTime;
-            }
+            flightTimeElapsed += Time.fixedDeltaTime;
 
             //Drag types currently only affect Impactvelocity 
             //Numerical Integration is currently Broken
@@ -244,10 +227,10 @@ namespace BDArmory
 
             if (tracerLength == 0)
             {
+
                 bulletTrail.SetPosition(0,
                     transform.position +
-                    ((currentVelocity * tracerDeltaFactor * TimeWarp.deltaTime / TimeWarp.CurrentRate) -
-                    (FlightGlobals.ActiveVessel.Velocity() * TimeWarp.deltaTime)) * 0.25);
+                    (currentVelocity * tracerDeltaFactor * 0.25f * Time.fixedDeltaTime));
             }
             else
             {
@@ -279,9 +262,9 @@ namespace BDArmory
                 hasRichocheted = false;
                 penTicker = 0;
 
-                float dist = currentVelocity.magnitude * TimeWarp.deltaTime;
-                Ray ray = new Ray(currPosition, currentVelocity);
-                var hits = Physics.RaycastAll(ray, dist, 557057);
+                float dist = currentVelocity.magnitude * Time.fixedDeltaTime;
+                Ray ray = new Ray(currPosition, currentVelocity);                
+                var hits = Physics.RaycastAll(ray, dist, 688129);
                 if (hits.Length > 0)
                 {
                     var orderedHits = hits.OrderBy(x => x.distance);
@@ -294,17 +277,27 @@ namespace BDArmory
 
                             RaycastHit hit = hitsEnu.Current;
                             Part hitPart = null;
+                            KerbalEVA hitEVA = null;
 
                             try
                             {
                                 hitPart = hit.collider.gameObject.GetComponentInParent<Part>();
+                                hitEVA = hit.collider.gameObject.GetComponentUpwards<KerbalEVA>();
                             }
                             catch (NullReferenceException)
                             {
                                 Debug.Log("[BDArmory]:NullReferenceException for Hit");
                                 return;
                             }
-                            //if (hit.collider.name.Contains("runway")) return;
+
+                            if (hitEVA != null)
+                            {
+                                hitPart = hitEVA.part;
+                                impactVelocity = currentVelocity.magnitude + dragVelocity;
+                                ApplyDamage(hitPart, hit, 1, 1);
+                                break;
+                            }
+
                             if (hitPart?.vessel == sourceVessel) return;  //avoid autohit;                     
 
                             float hitAngle = Vector3.Angle(currentVelocity, -hit.normal);
@@ -357,7 +350,7 @@ namespace BDArmory
                                 {
                                     prevPosition = currPosition;
                                     //move bullet            
-                                    transform.position += (currentVelocity * Time.deltaTime) / 3;
+                                    transform.position += (currentVelocity * Time.fixedDeltaTime) / 3;
 
                                     ExplosiveDetonation(hitPart, hit, ray);
                                     hasDetonated = true;
@@ -393,16 +386,13 @@ namespace BDArmory
                             }
 
                             /////////////////////////////////////////////////////////////////////////////////
-                            //Flak Explosion (air detonation/proximity fuse) or penetrated after a few ticks
+                            // penetrated after a few ticks
                             /////////////////////////////////////////////////////////////////////////////////
-
-                            //explosive bullet conditions
-                            //air detonation
+                             
                             //penetrating explosive
                             //richochets
 
-                            if ((explosive && airDetonation && distanceFromStart > detonationRange) ||
-                                (penTicker >= 2 && explosive) || (hasRichocheted && explosive))
+                            if ((penTicker >= 2 && explosive) || (hasRichocheted && explosive))
                             {
                                 //detonate
                                 ExplosiveDetonation(hitPart, hit, ray, airDetonation);
@@ -422,20 +412,92 @@ namespace BDArmory
                             }
                             //we need to stop the loop if the bullet has stopped,richochet or detonated
                             if (!hasPenetrated || hasRichocheted || hasDetonated) break;
-                            //end While
+
+                        }//end While
+                    }//end enumerator
+                }//end if hits
+            }// end if collision
+
+            //////////////////////////////////////////////////
+            //Flak Explosion (air detonation/proximity fuse)
+            //////////////////////////////////////////////////
+
+            if (ProximityAirDetonation(distanceFromStart))
+            {
+                //detonate
+                ExplosionFx.CreateExplosion(currPosition, tntMass, explModelPath, explSoundPath, false, caliber, null, currentVelocity);
+                KillBullet();
+
+                return;
+            }
+
+            //if ((explosive && airDetonation && (distanceFromStart > detonationRange))) //|| Vector3.Distance(currPosition,)) 
+            //{
+            //    //detonate
+            //    ExplosionFx.CreateExplosion(currPosition, tntMass, explModelPath, explSoundPath, false, caliber,null,currentVelocity);
+            //    KillBullet();
+            //    return;
+            //}
+
+            //////////////////////////////////////////////////
+            //Bullet Translation
+            //////////////////////////////////////////////////
+
+            prevPosition = currPosition;
+            //move bullet
+
+            if (bulletDrop && FlightGlobals.RefFrameIsRotating)
+            {
+                // Gravity???
+                var gravity_ = FlightGlobals.getGeeForceAtPosition(transform.position);
+                //var gravity_ = Physics.gravity;
+                currentVelocity += gravity_ * TimeWarp.deltaTime;
+            }
+
+            transform.position += currentVelocity * Time.fixedDeltaTime;
+        }
+
+        private bool ProximityAirDetonation(float distanceFromStart)
+        {
+            bool detonate = false;
+
+            if (distanceFromStart <= 500f) return false;
+
+            if (explosive && airDetonation)
+            {
+                if(distanceFromStart > maxAirDetonationRange || distanceFromStart > defaultDetonationRange)
+                {
+                    return detonate = true;
+                }
+
+                if (proximityDetonation)
+                {
+                    using (var hitsEnu = Physics.OverlapSphere(transform.position, detonationRange, 557057).AsEnumerable().GetEnumerator())
+                    {
+                        while (hitsEnu.MoveNext())
+                        {
+                            if (hitsEnu.Current == null) continue;
+
+                            try
+                            {
+                                Part partHit = hitsEnu.Current.GetComponentInParent<Part>();
+                                if (partHit?.vessel == sourceVessel) continue;
+
+                                if (BDArmorySettings.DRAW_DEBUG_LABELS)
+                                    Debug.Log("[BDArmory]: Bullet proximity sphere hit | Distance overlap = " + detonationRange + "| Part name = " + partHit.name);
+
+                                return detonate = true;
+                            }
+                            catch
+                            {
+                                // ignored
+                            }
                         }
                     }
                 }
             }
-
-            ///////////////////////////////////////////////////////////////////////
-            //Bullet Translation
-            ///////////////////////////////////////////////////////////////////////                     
-
-            prevPosition = currPosition;
-            //move bullet            
-            transform.position += currentVelocity * Time.deltaTime;
-        }
+            return detonate;
+          }
 
         private void ApplyDamage(Part hitPart, RaycastHit hit, float multiplier, float penetrationfactor)
         {
@@ -449,10 +511,8 @@ namespace BDArmory
                 BulletHitFX.CreateBulletHit(hitPart,hit.point, hit, hit.normal, hasRichocheted, caliber,penetrationfactor);
             }
 
-            hitPart.AddDamage_Ballistic(bulletMass, caliber, multiplier, penetrationfactor,
-                                        BDArmorySettings.DMG_MULTIPLIER, bulletDmgMult,
-                                        impactVelocity, explosive);
-
+            hitPart.AddBallisticDamage(bulletMass, caliber, multiplier, penetrationfactor,
+                                        bulletDmgMult,impactVelocity, explosive);
         }
 
         private void CalculateDragNumericalIntegration()
@@ -524,7 +584,7 @@ namespace BDArmory
                 //updating impact velocity
                 //impactVelocity = currentVelocity.magnitude;
 
-                flightTimeElapsed -= Time.deltaTime;
+                flightTimeElapsed -= Time.fixedDeltaTime;
                 prevPosition = transform.position;
             }
             else
@@ -543,7 +603,7 @@ namespace BDArmory
         private float CalculatePenetration()
         {
             float penetration = 0;
-            if (caliber > 10) //use the "krupp" penetration formula for anything larger then HMGs
+            if (caliber > 10) //use the "krupp" penetration formula for anything larger than HMGs
             {
                 penetration = (float)(16f * impactVelocity * Math.Sqrt(bulletMass / 1000) / Math.Sqrt(caliber));
             }
@@ -640,10 +700,19 @@ namespace BDArmory
 
         public void UpdateWidth(Camera c, float resizeFactor)
         {
+            if (c == null)
+            {
+                return;
+            }
+            if (bulletTrail == null)
+            {
+                return;
+            }
             if (!gameObject.activeInHierarchy)
             {
                 return;
             }
+
 
             float fov = c.fieldOfView;
             float factor = (fov / 60) * resizeFactor *
@@ -730,7 +799,7 @@ namespace BDArmory
                     break;
                 case "Dynamic":
                     float probability = CalculateExplosionProbability(hitPart);
-                    if (probability >= 4)
+                    if (probability >= 3)
                         CreateExplosion(hitPart);
                     break;
                 case "Never":
@@ -760,11 +829,11 @@ namespace BDArmory
 
             if (fuelPct > 0 && fuelPct <= 0.60f)
             {
-                probability = RangedProbability(new[] { 5f, 20f, 25f, 50f });
+                probability = Core.Utils.BDAMath.RangedProbability(new[] { 50f, 25f, 20f, 5f });
             }
             else
             {
-                probability = RangedProbability(new[] { 50f, 30f, 10f, 10f });
+                probability = Core.Utils.BDAMath.RangedProbability(new[] { 50f, 25f, 20f, 2f });
             }
 
             if (fuelPct == 1f || fuelPct == 0f)
@@ -775,41 +844,9 @@ namespace BDArmory
                 Debug.Log("[BDArmory]: Explosive Probablitliy " + probability);
             }
 
-            //probability = 1 - probability;
-
-            ////if (explosive)
-            ////        probability += 0.1f;
-
-            //if (probability == 0) probability = 1f;
             return probability;
-        }
 
-        float RangedProbability(float[] probs)
-        {
-
-            float total = 0;
-            //probs = new[] { 50f, 25f, 20f, 5f };
-
-            foreach (float elem in probs)
-            {
-                total += elem;
-            }
-
-            float randomPoint = UnityEngine.Random.value * total;
-
-            for (int i = 0; i < probs.Length; i++)
-            {
-                if (randomPoint < probs[i])
-                {
-                    return i;
-                }
-                else
-                {
-                    randomPoint -= probs[i];
-                }
-            }
-            return probs.Length - 1;
-        }       
+        }    
 
         public void CreateExplosion(Part part)
         {
@@ -839,8 +876,8 @@ namespace BDArmory
             explodeScale /= 100;
             part.explosionPotential = explodeScale;
 
-            part.explode();
-            
+
+            PartExploderSystem.AddPartToExplode(part);        
         }
 
         private float GetExplosivePower()

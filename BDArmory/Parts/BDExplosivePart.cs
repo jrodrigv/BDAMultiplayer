@@ -1,7 +1,9 @@
 using System;
+using BDArmory.Core.Enum;
 using BDArmory.Core.Extension;
 using BDArmory.Core.Utils;
 using BDArmory.FX;
+using BDArmory.UI;
 using UnityEngine;
 
 namespace BDArmory.Parts
@@ -16,7 +18,6 @@ namespace BDArmory.Parts
 	     UI_Label(affectSymCounterparts = UI_Scene.All, controlEnabled = true, scene = UI_Scene.All)]
 	    public float blastRadius = 10;
 
-      
         [KSPAction("Arm")]
         public void ArmAG(KSPActionParam param)
         {
@@ -38,8 +39,9 @@ namespace BDArmory.Parts
         }
 
 	    public bool Armed { get; set; } = true;
+	    public bool Shaped { get; set; } = false;
 
-        private double previousMass = -1;
+	    private double previousMass = -1;
 		
 		bool hasDetonated;
 		
@@ -83,8 +85,14 @@ namespace BDArmory.Parts
 		{
 			if(!hasDetonated && Armed && part.vessel.speed > 10)
 			{
+			    Vector3 direction = default(Vector3);
+
+			    if (Shaped)
+			    {
+			        direction = (part.transform.position + part.rb.velocity * Time.deltaTime).normalized;
+			    }
 			    ExplosionFx.CreateExplosion(part.transform.position, tntMass,
-			        "BDArmory/Models/explosion/explosionLarge", "BDArmory/Sounds/explode1", true, 0, part);
+			        "BDArmory/Models/explosion/explosionLarge", "BDArmory/Sounds/explode1", true, 0, part, direction);
                 hasDetonated = true;
 			}
 		}
@@ -93,10 +101,15 @@ namespace BDArmory.Parts
 	    {
 	        part.Destroy();
             ExplosionFx.CreateExplosion(part.transform.position, tntMass,
-	            "BDArmory/Models/explosion/explosionLarge", "BDArmory/Sounds/explode1",true,0, part);
+	            "BDArmory/Models/explosion/explosionLarge", "BDArmory/Sounds/explode1",true, 0, part);
 
-	      
         }
-    }
+
+	    public float GetBlastRadius()
+	    {
+	        CalculateBlast();
+	        return blastRadius;
+	    }
+	}
 }
 

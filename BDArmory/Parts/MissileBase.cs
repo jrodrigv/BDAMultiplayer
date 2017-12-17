@@ -8,6 +8,8 @@ using BDArmory.Radar;
 using BDArmory.UI;
 using UnityEngine;
 using System.Text;
+using BDArmory.Core;
+using BDArmory.Core.Enum;
 
 namespace BDArmory.Parts
 {
@@ -30,9 +32,7 @@ namespace BDArmory.Parts
         public string GetMissileType()
         {
             return missileType;
-        }
-
-       
+        }       
 
         [KSPField]
         public string missileType = "missile";
@@ -95,12 +95,6 @@ namespace BDArmory.Parts
             UI_FloatRange(minValue = 2f, maxValue = 30f, stepIncrement = 0.5f, scene = UI_Scene.Editor)]
         public float detonationTime = 2;
 
-        [KSPEvent(guiActive = true, guiName = "GPS Target", active = true)]
-        public void assignGPSTarget()
-        {
-            
-        }
-
         [KSPField]
         public float activeRadarRange = 6000;
 
@@ -119,9 +113,7 @@ namespace BDArmory.Parts
 
         public enum MissileStates { Idle, Drop, Boost, Cruise, PostThrust }
 
-        public enum DetonationDistanceStates {NotSafe, Cruising, CheckingProximity,
-            Detonate
-        }
+        public enum DetonationDistanceStates {NotSafe, Cruising, CheckingProximity, Detonate}
 
         public enum TargetingModes { None, Radar, Heat, Laser, Gps, AntiRad }
 
@@ -148,6 +140,7 @@ namespace BDArmory.Parts
         public float TimeIndex => Time.time - TimeFired;
 
         public TargetingModes TargetingMode { get; set; }
+
         public TargetingModes TargetingModeTerminal { get; set; }
 
         public float TimeToImpact { get; set; }
@@ -215,10 +208,10 @@ namespace BDArmory.Parts
         protected StringBuilder debugString = new StringBuilder();
 
         private float _throttle = 1f;
-        
+        private float _originalDistance = float.MinValue;
+        private Vector3 _startPoint;
 
-        
-        
+
         public string GetSubLabel()
         {
             if (Enum.GetName(typeof(TargetingModes), TargetingMode) == "None")
@@ -241,14 +234,30 @@ namespace BDArmory.Parts
 
         protected abstract void PartDie(Part p);
 
-        protected void DisablingExplosives()
+        protected void DisablingExplosives(Part p)
         {
-            vessel.FindPartModulesImplementing<BDExplosivePart>().Where(exp => exp != null && exp).Select(exp => exp.Armed = false);
+            if (p == null) return;
+
+            var explosive = p.FindModuleImplementing<BDExplosivePart>();
+            if (explosive != null)
+            {
+                p.FindModuleImplementing<BDExplosivePart>().Armed = false;
+            }
         }
 
-        protected void ArmingExplosive()
+        protected void SetupExplosive(Part p)
         {
-            vessel.FindPartModulesImplementing<BDExplosivePart>().Where(exp => exp != null && exp).Select(exp => exp.Armed = true);
+            if (p == null) return;
+
+            var explosive = p.FindModuleImplementing<BDExplosivePart>();
+            if (explosive != null)
+            {
+                p.FindModuleImplementing<BDExplosivePart>().Armed = true;
+                if (GuidanceMode == GuidanceModes.AGM || GuidanceMode == GuidanceModes.AGMBallistic)
+                {
+                    p.FindModuleImplementing<BDExplosivePart>().Shaped = true;
+                }
+            }
         }
 
         public abstract void Detonate();
@@ -263,11 +272,46 @@ namespace BDArmory.Parts
 				info.MissileBaseModule = this;
         }
 
-        protected void UpdateGPSTarget()
+        [KSPEvent(guiActive = true, guiActiveEditor = false, guiName = "GPS Target", active = true, name = "GPSTarget")]
+        public void assignGPSTarget()
         {
+            if (HighLogic.LoadedSceneIsFlight)
+                PickGPSTarget();
+        }
+
+        [KSPField(isPersistant = true)]
+        public bool gpsSet = false;
+
+        [KSPField(isPersistant = true)]
+        public Vector3 assignedGPSCoords;
+
+        [KSPField(isPersistant = true,guiName = "GPS Target")]
+        public string gpsTargetName = "";
+
+        void PickGPSTarget()
+        {
+            gpsSet = true;
+            Fields["gpsTargetName"].guiActive = true;
+            gpsTargetName = BDArmorySetup.Instance.ActiveWeaponManager.designatedGPSInfo.name;
+            assignedGPSCoords = BDArmorySetup.Instance.ActiveWeaponManager.designatedGPSCoords;
+        }
+
+        public Vector3d UpdateGPSTarget()
+        {
+            Vector3 gpsTargetCoords_;
+
+            if (gpsSet && assignedGPSCoords != null)
+            {
+                gpsTargetCoords_ = assignedGPSCoords;
+            }
+            else
+            {
+                gpsTargetCoords_ = targetGPSCoords;
+            }
+
             if (TargetAcquired)
             {
-                TargetPosition = VectorUtils.GetWorldSurfacePostion(targetGPSCoords, vessel.mainBody);
+                TargetPosition = VectorUtils.GetWorldSurfacePostion(gpsTargetCoords_, vessel.mainBody);
                 TargetVelocity = Vector3.zero;
                 TargetAcceleration = Vector3.zero;
             }
@@ -275,6 +319,8 @@ namespace BDArmory.Parts
             {
                 guidanceActive = false;
             }
+
+            return gpsTargetCoords_;
         }
 
         protected void UpdateHeatTarget()
@@ -734,9 +780,6 @@ namespace BDArmory.Parts
             }
         }
 
-
-        private  float _originalDistance = float.MinValue;
-        private  Vector3 _startPoint;
         protected Vector3 CalculateAGMBallisticGuidance(MissileBase missile, Vector3 targetPosition)
         {
             //set up
@@ -824,7 +867,6 @@ namespace BDArmory.Parts
             return agmTarget;
         }
 
-
         private double CalculateFreeFallTime()
         {
             double vi = -vessel.verticalSpeed;
@@ -908,9 +950,8 @@ namespace BDArmory.Parts
                     }
                     break;
                 case DetonationDistanceStates.CheckingProximity:
-                    float relativeDistancePerFrame = (float)(targetDistancePerFrame -
-                                                             missileDistancePerFrame).magnitude;
-                    float optimalDistance = DetonationDistance + relativeDistancePerFrame;
+                  
+                    float optimalDistance = (float) (DetonationDistance + missileDistancePerFrame.magnitude);
 
 
                     using (var hitsEnu = Physics.OverlapSphere(vessel.CoM, optimalDistance, 557057).AsEnumerable().GetEnumerator())
@@ -925,7 +966,8 @@ namespace BDArmory.Parts
                       
                                 if (partHit?.vessel == vessel) continue;
 
-                                Debug.Log("[BDArmory]: Missile proximity sphere hit ");
+                                Debug.Log("[BDArmory]: Missile proximity sphere hit | Distance overlap = " + optimalDistance + "| Part name = " + partHit.name);
+
                                 //We found a hit a different vessel than ours
                                 DetonationDistanceState =   DetonationDistanceStates.Detonate;
                                 return;
@@ -948,6 +990,7 @@ namespace BDArmory.Parts
 
         protected void SetInitialDetonationDistance()
         {
+          
             if (this.DetonationDistance == -1)
             {
                 if (GuidanceMode == GuidanceModes.AAMLead || GuidanceMode == GuidanceModes.AAMPure)
@@ -956,8 +999,12 @@ namespace BDArmory.Parts
                 }
                 else
                 {
-                    DetonationDistance = GetBlastRadius() * 0.10f;
+                    DetonationDistance = GetBlastRadius() * 0.05f;
                 }
+            }
+            if (BDArmorySettings.DRAW_DEBUG_LABELS)
+            {
+                Debug.Log("[BDArmory]: DetonationDistance = : " + DetonationDistance);
             }
         }
     }

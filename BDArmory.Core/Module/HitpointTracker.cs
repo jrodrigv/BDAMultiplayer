@@ -29,8 +29,7 @@ namespace BDArmory.Core.Module
 
         #endregion
 
-        //TODO: Add setting
-        private readonly float hitpointMultiplier = 1.855f;
+        private readonly float hitpointMultiplier = BDArmorySettings.HITPOINT_MULTIPLIER;
 
         private Part _prefabPart;
         private bool _setupRun = false;
@@ -118,7 +117,8 @@ namespace BDArmory.Core.Module
             }
             else
             {
-                Debug.Log("[BDArmory]: HitpointTracker::OnStart part  is null");
+
+                    Debug.Log("[BDArmory]: HitpointTracker::OnStart part  is null");
             }
         }
 
@@ -133,10 +133,8 @@ namespace BDArmory.Core.Module
                 UI_FloatRange armorField = (UI_FloatRange)Fields["Armor"].uiControlFlight;
                 //Once started the max value of the field should be the initial one
                 armorField.maxValue = Armor;
-                this.part.RefreshAssociatedWindows();
-            }
-
-            //damageRenderer = new MaterialColorUpdater(this.part.transform, PhysicsGlobals.TemperaturePropertyID);          
+                part.RefreshAssociatedWindows();
+            }         
         }
 
         private void ShipModified(ShipConstruct data)
@@ -153,8 +151,7 @@ namespace BDArmory.Core.Module
         }
 
         public override void OnUpdate()
-        {
-            //TODO: Add effects
+        {            
             if (!HighLogic.LoadedSceneIsFlight || !FlightGlobals.ready || Hitpoints == 0f)
             {
                 return;
@@ -164,8 +161,7 @@ namespace BDArmory.Core.Module
             {
                 _firstSetup = false;
                 SetupPrefab();
-             }
-           // damageRenderer?.Update(GetDamageColor());         
+             }        
         }        
 
         #region Hitpoints Functions
@@ -188,9 +184,9 @@ namespace BDArmory.Core.Module
 
                 //3. final calculations 
                 hitpoints = areaCalculation * density * hitpointMultiplier;
-                hitpoints = Mathf.Round(hitpoints/1000) * 1000;
+                hitpoints = Mathf.Round(hitpoints/500) * 500;
 
-                if (hitpoints <= 0) hitpoints = 500;
+                if (hitpoints <= 0) hitpoints = 500;                
             }
             else
             {
@@ -198,32 +194,33 @@ namespace BDArmory.Core.Module
                 Armor = 2;
             }
 
+            //override based on part configuration for custom parts
             if (maxHitPoints != 0)
             {
                 hitpoints = maxHitPoints;
             }
+
+            
             if (hitpoints <= 0) hitpoints = 500;
             return hitpoints;
         }
 
         public void DestroyPart()
         {
-            part.temperature = part.maxTemp * 2;
             if(part.mass <= 2f) part.explosionPotential *= 0.85f;
-            part.explode();
+
+            PartExploderSystem.AddPartToExplode(part);      
         }
 
         public float GetMaxArmor()
         {
             UI_FloatRange armorField = (UI_FloatRange)Fields["Armor"].uiControlEditor;
-
             return armorField.maxValue;
         }
 
         public float GetMaxHitpoints()
         {
             UI_ProgressBar hitpointField = (UI_ProgressBar) Fields["Hitpoints"].uiControlEditor;
-
             return hitpointField.maxValue;
         }        
 
@@ -242,12 +239,23 @@ namespace BDArmory.Core.Module
             if (part.name == "Weapon Manager" || part.name == "BDModulePilotAI") return;
 
             partdamage = Mathf.Max(partdamage, 0.01f) * -1;
-
             Hitpoints += partdamage;
 
             if (Hitpoints <= 0)
             {
                 DestroyPart();
+            }
+        }
+
+        public void AddDamageToKerbal(KerbalEVA kerbal, float damage)
+        {
+            damage = Mathf.Max(damage, 0.01f) * -1;
+            Hitpoints += damage;
+
+            if (Hitpoints <= 0)
+            {
+                // oh the humanity!
+                PartExploderSystem.AddPartToExplode(kerbal.part);    
             }
         }
 

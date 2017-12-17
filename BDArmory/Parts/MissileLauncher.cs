@@ -2,12 +2,13 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using BDArmory.Core;
+using BDArmory.UI;
 using BDArmory.Core.Extension;
 using BDArmory.Core.Utils;
 using BDArmory.FX;
 using BDArmory.Misc;
 using BDArmory.Radar;
-using BDArmory.UI;
 using UniLinq;
 using UnityEngine;
 
@@ -231,13 +232,16 @@ namespace BDArmory.Parts
 
         public GPSTargetInfo designatedGPSInfo;
 
+        float[] rcsFiredTimes;
+        KSPParticleEmitter[] rcsTransforms;
+
         #endregion
 
 
         [KSPAction("Fire Missile")]
         public void AGFire(KSPActionParam param)
         {
-            if (BDArmorySettings.Instance.ActiveWeaponManager != null && BDArmorySettings.Instance.ActiveWeaponManager.vessel == vessel) BDArmorySettings.Instance.ActiveWeaponManager.SendTargetDataToMissile(this);
+            if (BDArmorySetup.Instance.ActiveWeaponManager != null && BDArmorySetup.Instance.ActiveWeaponManager.vessel == vessel) BDArmorySetup.Instance.ActiveWeaponManager.SendTargetDataToMissile(this);
             if (missileTurret)
             {
                 missileTurret.FireMissile(this);
@@ -250,13 +254,13 @@ namespace BDArmory.Parts
             {
                 FireMissile();
             }
-            if (BDArmorySettings.Instance.ActiveWeaponManager != null) BDArmorySettings.Instance.ActiveWeaponManager.UpdateList();
+            if (BDArmorySetup.Instance.ActiveWeaponManager != null) BDArmorySetup.Instance.ActiveWeaponManager.UpdateList();
         }
 
         [KSPEvent(guiActive = true, guiName = "Fire Missile", active = true)]
         public void GuiFire()
         {
-            if (BDArmorySettings.Instance.ActiveWeaponManager != null && BDArmorySettings.Instance.ActiveWeaponManager.vessel == vessel) BDArmorySettings.Instance.ActiveWeaponManager.SendTargetDataToMissile(this);
+            if (BDArmorySetup.Instance.ActiveWeaponManager != null && BDArmorySetup.Instance.ActiveWeaponManager.vessel == vessel) BDArmorySetup.Instance.ActiveWeaponManager.SendTargetDataToMissile(this);
             if (missileTurret)
             {
                 missileTurret.FireMissile(this);
@@ -269,7 +273,7 @@ namespace BDArmory.Parts
             {
                 FireMissile();
             }
-            if (BDArmorySettings.Instance.ActiveWeaponManager != null) BDArmorySettings.Instance.ActiveWeaponManager.UpdateList();
+            if (BDArmorySetup.Instance.ActiveWeaponManager != null) BDArmorySetup.Instance.ActiveWeaponManager.UpdateList();
         }
 
         [KSPEvent(guiActive = true, guiActiveEditor = false, active = true, guiName = "Jettison")]
@@ -278,7 +282,7 @@ namespace BDArmory.Parts
             if (missileTurret) return;
 
             part.decouple(0);
-            if (BDArmorySettings.Instance.ActiveWeaponManager != null) BDArmorySettings.Instance.ActiveWeaponManager.UpdateList();
+            if (BDArmorySetup.Instance.ActiveWeaponManager != null) BDArmorySetup.Instance.ActiveWeaponManager.UpdateList();
         }
 
         void ParseWeaponClass()
@@ -297,7 +301,7 @@ namespace BDArmory.Parts
                 weaponClass = WeaponClasses.Missile;
             }
 		}
-        
+
 		public override void OnStart(StartState state)
 		{
 
@@ -347,7 +351,18 @@ namespace BDArmory.Parts
 
 			if(HighLogic.LoadedSceneIsFlight)
 			{
-				MissileReferenceTransform = part.FindModelTransform("missileTransform");
+			    //TODO: Backward compatibility wordaround
+			    if (part.FindModuleImplementing<BDExplosivePart>() == null)
+			    {
+			        FromBlastPowerToTNTMass();
+			    }
+			    else
+			    {
+			        //New Explosive module
+                    DisablingExplosives(part);
+			    }
+
+                MissileReferenceTransform = part.FindModelTransform("missileTransform");
 				if(!MissileReferenceTransform)
 				{
 					MissileReferenceTransform = part.partTransform;
@@ -500,19 +515,20 @@ namespace BDArmory.Parts
 					KillRCS();
 				}
 				SetupAudio();
-
-                //TODO: Backward compatibility wordaround
-			    if (vessel.FindPartModulesImplementing<BDExplosivePart>().Count == 0) //New Explosive module
-			    {
-			        FromBlastPowerToTNTMass();
-                }
 			}
 
 			if(GuidanceMode != GuidanceModes.Cruise)
 			{
 				Fields["cruiseAltitude"].guiActive = false;
-				Fields["cruiseAltitude"].guiActiveEditor = false;
-			}
+                Fields["cruiseAltitude"].guiActiveEditor = false;
+
+            }
+
+            if (GuidanceMode == GuidanceModes.Cruise && BDArmorySettings.ADVANCED_EDIT)
+            {
+                //Fields["GPS Target"].guiActive = true;
+                //Fields["GPS Target"].guiActiveEditor = true;
+            }
 
             if (GuidanceMode != GuidanceModes.AGM)
             {
@@ -571,9 +587,7 @@ namespace BDArmory.Parts
         private void FromBlastPowerToTNTMass()
         {
             blastPower = BlastPhysicsUtils.CalculateExplosiveMass(blastRadius);
-        }
-
-     
+        }     
 
         void OnCollisionEnter(Collision col)
 		{
@@ -581,7 +595,7 @@ namespace BDArmory.Parts
                 Debug.Log("[BDArmory]: Something Collided: " + col.ToString());
             if (HasExploded || !HasFired) return;            
 
-            if (TimeIndex > 1 && this.part.vessel.speed > 10)
+            if (TimeIndex > 1 && this.part.vessel.Velocity().magnitude > 10f)
             {
                 Debug.Log("[BDArmory]: Missile Collided - Triggering Detonation");
                 Detonate();
@@ -622,7 +636,7 @@ namespace BDArmory.Parts
 			}
 
 			UpdateVolume();
-			BDArmorySettings.OnVolumeChange += UpdateVolume;
+			BDArmorySetup.OnVolumeChange += UpdateVolume;
 		}
 
 		void UpdateVolume()
@@ -644,27 +658,29 @@ namespace BDArmory.Parts
 
         void OnDestroy()
 		{
-			BDArmorySettings.OnVolumeChange -= UpdateVolume;
+			BDArmorySetup.OnVolumeChange -= UpdateVolume;
             GameEvents.onPartDie.Remove(PartDie);
         }
 
 	    public override float GetBlastRadius()
-	    {
-	        if (vessel.FindPartModulesImplementing<BDExplosivePart>().Count > 0)
+        { 
+	        if (part.FindModuleImplementing<BDExplosivePart>() != null )
 	        {
-	            return vessel.FindPartModulesImplementing<BDExplosivePart>().Max(x => x.blastRadius);
+
+                return part.FindModuleImplementing<BDExplosivePart>().GetBlastRadius();
+
 	        }
 	        else
 	        {
 	            return blastRadius;
-	        }
+	        }     
         }
 
 	    public override void FireMissile()
 		{
 		    if (HasFired) return;
 
-		    ArmingExplosive();
+            SetupExplosive(this.part);
             HasFired = true;
 
             Debug.Log("[BDArmory]: Missile Fired! " + vessel.vesselName);
@@ -674,7 +690,7 @@ namespace BDArmory.Parts
 
 		    if(GetComponentInChildren<KSPParticleEmitter>())
 		    {
-		        BDArmorySettings.numberOfParticleEmitters++;
+		        BDArmorySetup.numberOfParticleEmitters++;
 		    }
 
 		    List<MissileFire>.Enumerator wpm = vessel.FindPartModulesImplementing<MissileFire>().GetEnumerator();
@@ -743,7 +759,8 @@ namespace BDArmory.Parts
 		    DetonationDistanceState = DetonationDistanceStates.NotSafe;
             MissileState = MissileStates.Drop;
 		    part.crashTolerance = 9999;
-		    StartCoroutine(MissileRoutine());
+
+            StartCoroutine(MissileRoutine());
 		}
 
 		IEnumerator DecoupleRoutine()
@@ -813,7 +830,7 @@ namespace BDArmory.Parts
 				   && FlightGlobals.ActiveVessel != SourceVessel 
 				   && mCamDistanceSqr < 400*400 && mCamRelVSqr > 300*300  
 				   && mCamRelVSqr < 800*800 
-					&& Vector3.Angle(vessel.Velocity(), FlightGlobals.ActiveVessel.transform.position-transform.position)<60)
+				   && Vector3.Angle(vessel.Velocity(), FlightGlobals.ActiveVessel.transform.position-transform.position)<60)
 				{
 					sfAudioSource.PlayOneShot (GameDatabase.Instance.GetAudioClip("BDArmory/Sounds/missileFlyby"));	
 					hasPlayedFlyby = true;
@@ -853,8 +870,7 @@ namespace BDArmory.Parts
             
                 //Timed detonation
                 if (isTimed && TimeIndex > detonationTime)
-				{
-					//part.temperature = part.maxTemp+100; //This is already done in DetonateIfPossible()
+				{					
                     Detonate();
 				}
 			}
@@ -1098,8 +1114,6 @@ namespace BDArmory.Parts
 
                     case TargetingModes.Radar:
                         // pretend we have an active radar seeker for ground targets:
-                        //radarTarget = vesselRadarData.lockedTargetData.targetData;
-                        //vrd = vesselRadarData;
 
                         TargetSignatureData[] scannedTargets = new TargetSignatureData[5];
                         TargetSignatureData.ResetTSDArray(ref scannedTargets);
@@ -1138,20 +1152,17 @@ namespace BDArmory.Parts
                                 RadarWarningReceiver.PingRWR(new Ray(transform.position, radarTarget.predictedPosition - transform.position), 45, RadarWarningReceiver.RWRThreatTypes.Torpedo, 2f);
                             else
                                 RadarWarningReceiver.PingRWR(new Ray(transform.position, radarTarget.predictedPosition - transform.position), 45, RadarWarningReceiver.RWRThreatTypes.MissileLaunch, 2f);
-
-                            if (BDArmorySettings.DRAW_DEBUG_LABELS)
+                                 
                                 Debug.Log("[BDArmory][Terminal Guidance]: Pitbull! Radar missileBase has gone active.  Radar sig strength: " + radarTarget.signalStrength.ToString("0.0") + " - target: "+radarTarget.vessel.name);
                         }
                         else
                         {
-                            TargetAcquired = true;
-                            //TargetPosition = transform.position + (startDirection * 500);
-                            TargetPosition = VectorUtils.GetWorldSurfacePostion(targetGPSCoords, vessel.mainBody); //putting back the GPS target if no radar target found
+                            TargetAcquired = true;                            
+                            TargetPosition = VectorUtils.GetWorldSurfacePostion(UpdateGPSTarget(), vessel.mainBody); //putting back the GPS target if no radar target found
                             TargetVelocity = Vector3.zero;
                             TargetAcceleration = Vector3.zero;
                             targetGPSCoords = VectorUtils.WorldPositionToGeoCoords(TargetPosition, vessel.mainBody);                            
-                            if (BDArmorySettings.DRAW_DEBUG_LABELS)
-                                Debug.Log("[BDArmory][Terminal Guidance]: Missile radar could not acquire a target lock");                            
+                            Debug.Log("[BDArmory][Terminal Guidance]: Missile radar could not acquire a target lock - Defaulting to GPS Target");                            
                             
                         }
                         break;
@@ -1222,7 +1233,7 @@ namespace BDArmory.Parts
 			{
 				//light, sound & particle fx
 				//sound
-				if(!BDArmorySettings.GameIsPaused)
+				if(!BDArmorySetup.GameIsPaused)
 				{
 					if(!audioSource.isPlaying)
 					{
@@ -1366,7 +1377,7 @@ namespace BDArmory.Parts
 			float cruiseStartTime = Time.time;
 			while(Time.time - cruiseStartTime < cruiseTime)
 			{
-				if(!BDArmorySettings.GameIsPaused)
+				if(!BDArmorySetup.GameIsPaused)
 				{
 					if(!audioSource.isPlaying || audioSource.clip != thrustAudio)
 					{
@@ -1551,7 +1562,7 @@ namespace BDArmory.Parts
 			Vector3 cruiseTarget = Vector3.zero;
 			float distanceSqr = (TargetPosition - transform.position).sqrMagnitude;
 
-			if(terminalManeuvering && distanceSqr < 4500*4500)
+			if(terminalManeuvering && distanceSqr < terminalGuidanceDistance * terminalGuidanceDistance)
 			{
 				cruiseTarget = MissileGuidance.GetTerminalManeuveringTarget(TargetPosition, vessel, cruiseAltitude);
                 debugString.Append($"Terminal Maneuvers");
@@ -1719,7 +1730,6 @@ namespace BDArmory.Parts
 			aeroTorque = MissileGuidance.DoAeroForces(this, targetPosition, liftArea, controlAuthority * steerMult, aeroTorque, finalMaxTorque, maxAoA);
 		}
 
-
         void AGMBallisticGuidance()
 		{
             DoAero(CalculateAGMBallisticGuidance(this,TargetPosition));
@@ -1766,7 +1776,7 @@ namespace BDArmory.Parts
 
             Debug.Log("[BDArmory]: Detonate Triggered");
 
-            BDArmorySettings.numberOfParticleEmitters--;	
+            BDArmorySetup.numberOfParticleEmitters--;	
 		    HasExploded = true;
 				
 		    if(legacyTargetVessel!=null)
@@ -1782,15 +1792,15 @@ namespace BDArmory.Parts
 				
 		    if(SourceVessel==null) SourceVessel = vessel;
 
-		    if (vessel.FindPartModulesImplementing<BDExplosivePart>().Count > 0)
+		    if (part.FindModuleImplementing<BDExplosivePart>() != null)
 		    {
-		        vessel.FindPartModulesImplementing<BDExplosivePart>()
-		            .ForEach(explosivePart => explosivePart.DetonateIfPossible());
+		        part.FindModuleImplementing<BDExplosivePart>().DetonateIfPossible();
 		    }
-		    else
+		    else //TODO: Remove this backguard compatibility
 		    {
 		        Vector3 position = transform.position;//+rigidbody.velocity*Time.fixedDeltaTime;
-		        ExplosionFx.CreateExplosion(position, blastPower, explModelPath, explSoundPath, true,0, part);
+
+		        ExplosionFx.CreateExplosion(position, blastPower, explModelPath, explSoundPath, true, 0, part);
             }
 		    if (part != null) part.Destroy();
 
@@ -1842,8 +1852,6 @@ namespace BDArmory.Parts
             wpm.Dispose();
 		}
 
-		float[] rcsFiredTimes;
-		KSPParticleEmitter[] rcsTransforms;
 		void SetupRCS()
 		{
 			rcsFiredTimes = new float[]{0,0,0,0};
@@ -2035,7 +2043,6 @@ namespace BDArmory.Parts
             }
         }
 
-
         private string GetBrevityCode()
         {
             //torpedo: determine subtype
@@ -2099,7 +2106,6 @@ namespace BDArmory.Parts
             // default:
             return "Unguided";
         }
-
 
         // RMB info in editor
         public override string GetInfo()

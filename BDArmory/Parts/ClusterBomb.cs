@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using BDArmory.Core.Enum;
 using BDArmory.Core.Extension;
 using BDArmory.FX;
 using BDArmory.Misc;
@@ -229,7 +230,7 @@ namespace BDArmory.Parts
 
                 //    float destroyChance = (rb.mass / hitPart.crashTolerance) *
                 //                              (rb.velocity - hit.rigidbody.velocity).magnitude * 8000;
-                //    if (BDArmorySettings.INSTAKILL)
+                //    if (BDArmorySetup.INSTAKILL)
                 //    {
                 //        destroyChance = 100;
                 //    }
@@ -259,7 +260,7 @@ namespace BDArmory.Parts
                     //{
                     //    float destroyChance = (rb.mass/hitPart.crashTolerance)*
                     //                          (rb.velocity - hit.rigidbody.velocity).magnitude*8000;
-                    //    if (BDArmorySettings.INSTAKILL)
+                    //    if (BDArmorySetup.INSTAKILL)
                     //    {
                     //        destroyChance = 100;
                     //    }

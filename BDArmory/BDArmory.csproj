@@ -79,6 +79,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FX\DecalEmitterScript.cs" />
+    <Compile Include="FX\DecalGaplessParticleEmitter.cs" />
     <Compile Include="LoadedVesselSwitcher.cs" />
     <Compile Include="Misc\BahaTurretBullet.cs" />
     <Compile Include="Misc\CFEnable.cs" />
@@ -87,8 +89,7 @@
     <Compile Include="Parts\BDExplosivePart.cs" />
     <Compile Include="Parts\MissileBase.cs" />
     <Compile Include="UI\BDAEditorAnalysisWindow.cs" />
-    <Compile Include="UI\BDAPersistantSettingsField.cs" />
-    <Compile Include="UI\BDArmorySettings.cs" />
+    <Compile Include="UI\BDArmorySetup.cs" />
     <Compile Include="UI\BDAWindowSettingsField.cs" />
     <Compile Include="Bullets\BulletInfo.cs" />
     <Compile Include="Parts\MissileLauncher.cs" />
@@ -122,7 +123,7 @@
     <Compile Include="Misc\VectorUtils.cs" />
     <Compile Include="ModuleWeapon.cs" />
     <Compile Include="Misc\ObjectPool.cs" />
-    <Compile Include="PooledBullet.cs" />
+    <Compile Include="Bullets\PooledBullet.cs" />
     <Compile Include="FX\CameraBulletRenderer.cs" />
     <Compile Include="Shaders\BDAShaderLoader.cs" />
     <Compile Include="Misc\IBDWeapon.cs" />

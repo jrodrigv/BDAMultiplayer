@@ -1,4 +1,5 @@
 ﻿using System;
+using BDArmory.Core.Enum;
 using BDArmory.Core.Extension;
 using BDArmory.Core.Module;
 using UnityEngine;
@@ -7,45 +8,38 @@ namespace BDArmory.Core.Utils
 {
     public static class BlastPhysicsUtils
     {
-        private const float MaxAcceleration = 2009;
+        // This values represent percentage of the blast radius where we consider that the damage happens.
 
-        public static BlastInfo CalculatePartBlastEffects(Part part, float distanceToHit, double vesselMass,  float explosiveMass, float range, float damageMultiplier)
+        public static BlastInfo CalculatePartBlastEffects(Part part, float distanceToHit, double vesselMass,  float explosiveMass, float range)
         {
+            float clampedMinDistanceToHit = ClampRange(explosiveMass, distanceToHit);
+            float clampedMaxDistanceToHit = ClampRange(explosiveMass, distanceToHit + part.GetAverageBoundSize());
 
-            float clampedDistanceToHit = ClampRange(explosiveMass, distanceToHit);
+            double minScaledDistance = CalculateScaledDistance(explosiveMass, clampedMinDistanceToHit);
+            double maxScaledDistance = CalculateScaledDistance(explosiveMass, clampedMaxDistanceToHit);
 
-            double scaledDistance = CalculateScaledDistance(explosiveMass, clampedDistanceToHit);
+            double maxPressurePerMs = CalculateIncidentImpulse(minScaledDistance, explosiveMass);
+            double minPressurePerMs = CalculateIncidentImpulse(maxScaledDistance, explosiveMass);
 
 
-            double pressurePerMs = CalculateIncidentImpulse(scaledDistance, explosiveMass);
+            double totalDamage = (maxPressurePerMs + minPressurePerMs);// * 2 / 2 ;
 
-            //double totalMs = CalculatePositivePhaseDuration(scaledDistance, explosiveMass);
-            var totalMs = 5;
+            float effectivePartArea = part.GetArea() * 0.33f;
 
-            double totalPressure = pressurePerMs * totalMs;
+            float positivePhase = 5;
 
-            //Calculation impulse
-            float effectiveDistance = Mathf.Clamp((range - distanceToHit) * 0.15f, range * 0.01f, range * 0.15f);
-
-            float effectivePartArea = CalculateEffectiveBlastAreaToPart(effectiveDistance, part);
-
-            double force = CalculateForce(totalPressure, effectivePartArea, totalMs);
+            double force = CalculateForce(maxPressurePerMs, effectivePartArea, positivePhase);
 
             float acceleration = (float) (force / vesselMass);
 
             // Calculation of damage
-            float damage = (float) (totalPressure * Mathf.Clamp01(effectiveDistance / part.GetAverageBoundSize()));
 
-            return new BlastInfo() { TotalPressure = totalPressure, EffectiveDistance = effectiveDistance, EffectivePartArea = effectivePartArea, PositivePhaseDuration = totalMs,  VelocityChange = acceleration , Damage = damage };
+            float finalDamage = (float) totalDamage;
+         
+            return new BlastInfo() { TotalPressure = maxPressurePerMs, EffectivePartArea = effectivePartArea, PositivePhaseDuration = positivePhase,  VelocityChange = acceleration , Damage = finalDamage };
         }
 
-        private static float CalculateEffectiveBlastAreaToPart(float effectiveDistance, Part part)
-        {
-            float circularArea = Mathf.PI * effectiveDistance * effectiveDistance;
-
-            return Mathf.Clamp(circularArea, 0f, part.GetArea() * 0.33f);
-        }
-
+ 
         private static double CalculateScaledDistance(float explosiveCharge, float distanceToHit)
         {
             return (distanceToHit / Math.Pow(explosiveCharge, 1f / 3f));
@@ -54,35 +48,15 @@ namespace BDArmory.Core.Utils
 
         private static float ClampRange (float explosiveCharge , float distanceToHit)
         {
-            float cubeRootOfChargeWeight = (float) Math.Pow(explosiveCharge, 1f / 3f);
+            float cubeRootOfChargeWeight = (float)Math.Pow(explosiveCharge, 1f / 3f);
 
             if (distanceToHit < 0.0674f * cubeRootOfChargeWeight)
             {
                 return 0.0674f * cubeRootOfChargeWeight;
             }
                 return distanceToHit;    
-        }
-        private static double CalculateIncidentPressure(double scaledDistance)
-
-        {
-           var t = Math.Log(scaledDistance) / Math.Log(10);
-
-            //NATO AASTP version
-            var u = -0.214362789151 + 1.35034249993 * t;
-            var ip = 2.78076916577 - 1.6958988741 * u -
-                 0.154159376846 * Math.Pow(u, 2) +
-                 0.514060730593 * Math.Pow(u, 3) +
-                 0.0988534365274 * Math.Pow(u, 4) -
-                 0.293912623038 * Math.Pow(u, 5) -
-                 0.0268112345019 * Math.Pow(u, 6) +
-                 0.109097496421 * Math.Pow(u, 7) +
-                 0.00162846756311 * Math.Pow(u, 8) -
-                 0.0214631030242 * Math.Pow(u, 9) +
-                 0.0001456723382 * Math.Pow(u, 10) +
-                 0.00167847752266 * Math.Pow(u, 11);
-            ip = Math.Pow(10, ip);
-            return ip;
         }
+
         private static double CalculateIncidentImpulse(double scaledDistance, float explosiveCharge)
         {
             double t = Math.Log(scaledDistance) / Math.Log(10);
@@ -113,59 +87,6 @@ namespace BDArmory.Core.Utils
             return ii;
         }
 
-
-        private static double  CalculatePositivePhaseDuration(double scaledDistance, float explosiveCharge)
-        {
-            double t = Math.Log(scaledDistance) / Math.Log(10);
-            double cubeRootOfChargeWeight = Math.Pow(explosiveCharge, 1f/3f);
-            double ppd = 0;
-            if (scaledDistance <= 0.178)
-            {
-                return CalculatePositivePhaseDuration(0.179, explosiveCharge);
-            }
-            else if (scaledDistance > 0.178 && scaledDistance <= 1.01)
-            {
-                double U = 1.92946154068 + 5.25099193925 * t;
-                ppd = -0.614227603559 + 0.130143717675 * U +
-                      0.134872511954 * Math.Pow(U, 2) +
-                      0.0391574276906 * Math.Pow(U, 3) -
-                      0.00475933664702 * Math.Pow(U, 4) -
-                      0.00428144598008 * Math.Pow(U, 5);
-
-            }
-            //else if (scaledDistance > 1.01 && scaledDistance <= 2.78)
-            //{
-            //    double U = 2.12492525216 + 9.2996288611 * t;
-            //    ppd = 0.315409245784 - 0.0297944268976 * U +
-            //          0.030632954288 * Math.Pow(U, 2) +
-            //          0.0183405574086 * Math.Pow(U, 3) -
-            //          0.0173964666211 * Math.Pow(U, 4) -
-            //          0.00106321963633 * Math.Pow(U, 5) +
-            //          0.00562060030977 * Math.Pow(U, 6) +
-            //          0.0001618217499 * Math.Pow(U, 7) -
-            //          0.0006860188944 * Math.Pow(U, 8);
-
-            //}
-            else if (scaledDistance > 1.01 && scaledDistance <= 40.0)
-            {
-                double U = -3.53626218091 + 3.46349745571 * t;
-                ppd = 0.686906642409 + 0.0933035304009 * U -
-                      0.0005849420883 * Math.Pow(U, 2) -
-                      0.00226884995013 * Math.Pow(U, 3) -
-                      0.00295908591505 * Math.Pow(U, 4) +
-                      0.00148029868929 * Math.Pow(U, 5);
-
-            }
-            else if(scaledDistance > 40.0)
-            {
-                return CalculatePositivePhaseDuration(39.9, explosiveCharge);
-            }
-
-           double fppd = Math.Pow(10, ppd);
-           fppd = fppd * cubeRootOfChargeWeight;
-            Debug.Log("scaledDistance = " + scaledDistance + "; ppd = " + ppd+ ";fppd = "+fppd);
-            return fppd;
-        }
         /// <summary>
         /// Calculate newtons from the pressure in kPa and the surface on Square meters
         /// </summary>
@@ -197,7 +118,7 @@ namespace BDArmory.Core.Utils
         /// <returns>explosive range in meters </returns>
         public static float CalculateExplosiveMass(float range)
         {
-            return (float) Math.Pow((range / 14.8f), 3);
+            return (float)Math.Pow((range / 14.8f), 3);
         }
 
     }
@@ -208,7 +129,6 @@ namespace BDArmory.Core.Utils
         public float EffectivePartArea { get; set; }
         public float Damage { get; set; }
         public double TotalPressure { get; set; }
-        public float EffectiveDistance { get; set; }
         public double PositivePhaseDuration { get; set; }
     }
 }

@@ -31,6 +31,7 @@
     <LangVersion>6</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BDAPersistantSettingsField.cs" />
     <Compile Include="Bootstrapper.cs" />
     <Compile Include="BuildingDamage.cs" />
     <Compile Include="Dependencies.cs" />
@@ -39,14 +40,16 @@
     <Compile Include="IDamageService.cs" />
     <Compile Include="TemperatureDamageService.cs" />
     <Compile Include="Extension\VesselExtensions.cs" />
-    <Compile Include="Module\ArmorUtils.cs" />
-    <Compile Include="Module\BDArmor.cs" />
     <Compile Include="Module\HitpointTracker.cs" />
+    <Compile Include="PartExploderSystem.cs" />
+    <Compile Include="PerformanceLogger.cs" />
     <Compile Include="Services\DamageService.cs" />
     <Compile Include="Services\ModuleDamageService.cs" />
+    <Compile Include="BDArmorySettings.cs" />
     <Compile Include="Utils\BlastPhysicsUtils.cs" />
     <Compile Include="Utils\BulletPhysics.cs" />
     <Compile Include="Utils\DebugUtils.cs" />
+    <Compile Include="Utils\BDAMath.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
