@@ -43,6 +43,7 @@ BDArmory.Core/obj/Debug/BDArmory.Core.csproj.FileListAbsolute.txt
 BDArmory.Core/obj/Release/BDArmory.Core.csproj.FileListAbsolute.txt
 BDArmory/bin/Debug
 BDArmory.Core/obj/
+BDArmory.Core/obj/Release
 BDArmory.Core/.vs
 BDArmory.Core/packages.config
 BDArmory/packages.config
