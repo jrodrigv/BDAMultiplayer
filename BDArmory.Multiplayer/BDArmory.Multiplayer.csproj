@@ -31,18 +31,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_DEV_13\KSP_x64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>..\BDArmory\LocalDev\Refs\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="LunaClient, Version=0.0.9.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_DEV_131\GameData\LunaMultiPlayer\Plugins\LunaClient.dll</HintPath>
+      <HintPath>..\BDArmory\LocalDev\Refs\LunaClient.dll</HintPath>
     </Reference>
     <Reference Include="LunaCommon, Version=0.0.9.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_DEV_131\GameData\LunaMultiPlayer\Plugins\LunaCommon.dll</HintPath>
+      <HintPath>..\BDArmory\LocalDev\Refs\LunaCommon.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_DEV_13\KSP_x64_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>..\BDArmory\LocalDev\Refs\UnityEngine.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
