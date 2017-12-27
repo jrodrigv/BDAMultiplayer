@@ -4,17 +4,19 @@ namespace BDArmory.Events
 {
     public class ExplosionEventService : NotificableService
     {
-        public virtual void PublishExplosionEvent(Vector3 position, float radius, float power, string explModelPath, string soundPath)
+        public virtual void PublishExplosionEvent(Vector3 position, float tntMassEquivalent, string explModelPath, string soundPath, Vector3 direction = default(Vector3))
         {
             PublishEvent(new ExplosionEventArgs()
             {
                 PositionX = position.x,
                 PositionY = position.y,
                 PositionZ = position.z,
-                Radius = radius,
-                Power = power,
+                TntMassEquivalent = tntMassEquivalent,
                 ExplosionModelPath = explModelPath,
-                SoundPath = soundPath
+                SoundPath = soundPath,
+                DirectionX = direction.x,
+                DirectionY = direction.y,
+                DirectionZ = direction.z
             });
         }
     }

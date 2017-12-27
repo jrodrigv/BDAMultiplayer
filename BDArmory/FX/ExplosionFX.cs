@@ -6,6 +6,7 @@ using BDArmory.Misc;
 using UnityEngine;
 using System;
 using BDArmory.Core.Utils;
+using BDArmory.Events;
 
 namespace BDArmory.FX
 {
@@ -14,6 +15,7 @@ namespace BDArmory.FX
         public KSPParticleEmitter[] PEmitters { get; set; }
         public Light LightFx { get; set; }
         public float StartTime { get; set; }
+
         public AudioClip ExSound { get; set; }
         public AudioSource AudioSource { get; set; }
         private float MaxTime { get; set; }
@@ -23,6 +25,7 @@ namespace BDArmory.FX
         public float Power { get; set; }
         public Vector3 Position { get; set; }
         public Vector3 Direction { get; set; }
+        public bool OnlyVisual { get; private set; }
         public Part ExplosivePart { get; set; }
 
         public float TimeIndex => Time.time - StartTime;
@@ -41,7 +44,12 @@ namespace BDArmory.FX
         {
             StartTime = Time.time;
             MaxTime = (Range / ExplosionVelocity)*3f;
-            CalculateBlastEvents();
+
+            if (!OnlyVisual)
+            {
+                CalculateBlastEvents();
+            }
+
             PEmitters = gameObject.GetComponentsInChildren<KSPParticleEmitter>();
             IEnumerator<KSPParticleEmitter> pe = PEmitters.AsEnumerable().GetEnumerator();
             while (pe.MoveNext())
@@ -363,10 +371,11 @@ namespace BDArmory.FX
             {
                 // ignored due to depending on previous event an object could be disposed
             }
-        }        
+        }
 
         public static void CreateExplosion(Vector3 position, float tntMassEquivalent, string explModelPath, string soundPath, bool isMissile = true,float caliber = 0, Part explosivePart = null, Vector3 direction = default(Vector3))
         {
+            Dependencies.Get<ExplosionEventService>().PublishExplosionEvent(position, tntMassEquivalent, explModelPath, soundPath, direction);
             var go = GameDatabase.Instance.GetModel(explModelPath);
             var soundClip = GameDatabase.Instance.GetAudioClip(soundPath);
 
@@ -394,6 +403,7 @@ namespace BDArmory.FX
             eFx.Caliber = caliber;
             eFx.ExplosivePart = explosivePart;
             eFx.Direction = direction;
+            eFx.OnlyVisual = false;
 
             if (tntMassEquivalent <= 5)
             {
@@ -412,6 +422,56 @@ namespace BDArmory.FX
             }
             pe.Dispose();
         }
+
+        public static void CreateVisualExplosion(Vector3 position, float tntMassEquivalent, string explModelPath, string soundPath, Vector3 direction = default(Vector3))
+        {
+
+            Dependencies.Get<ExplosionEventService>().PublishExplosionEvent(position, tntMassEquivalent, explModelPath, soundPath, direction);
+
+            var go = GameDatabase.Instance.GetModel(explModelPath);
+            var soundClip = GameDatabase.Instance.GetAudioClip(soundPath);
+
+            Quaternion rotation;
+            if (direction == default(Vector3))
+            {
+                rotation = Quaternion.LookRotation(VectorUtils.GetUpDirection(position));
+            }
+            else
+            {
+                rotation = Quaternion.LookRotation(direction);
+            }
+
+            GameObject newExplosion = (GameObject)Instantiate(go, position, rotation);
+            ExplosionFx eFx = newExplosion.AddComponent<ExplosionFx>();
+            eFx.ExSound = soundClip;
+            eFx.AudioSource = newExplosion.AddComponent<AudioSource>();
+            eFx.AudioSource.minDistance = 200;
+            eFx.AudioSource.maxDistance = 5500;
+            eFx.AudioSource.spatialBlend = 1;
+            eFx.Range = BlastPhysicsUtils.CalculateBlastRange(tntMassEquivalent);
+            eFx.Position = position;
+            eFx.Power = tntMassEquivalent;
+            eFx.Direction = direction;
+            eFx.OnlyVisual = true;
+
+            if (tntMassEquivalent <= 5)
+            {
+                eFx.AudioSource.minDistance = 4f;
+                eFx.AudioSource.maxDistance = 3000;
+                eFx.AudioSource.priority = 9999;
+            }
+            newExplosion.SetActive(true);
+            IEnumerator<KSPParticleEmitter> pe = newExplosion.GetComponentsInChildren<KSPParticleEmitter>().Cast<KSPParticleEmitter>()
+                .GetEnumerator();
+            while (pe.MoveNext())
+            {
+                if (pe.Current == null) continue;
+                pe.Current.emit = true;
+
+            }
+            pe.Dispose();
+        }
+
 
         public static void AddForceAtPosition(Rigidbody rb,Vector3 force,Vector3 position)
         {
