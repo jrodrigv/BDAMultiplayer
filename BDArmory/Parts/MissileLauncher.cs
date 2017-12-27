@@ -522,12 +522,9 @@ namespace BDArmory.Parts
 				Fields["cruiseAltitude"].guiActive = false;
                 Fields["cruiseAltitude"].guiActiveEditor = false;
 
-            }
-
-            if (GuidanceMode == GuidanceModes.Cruise && BDArmorySettings.ADVANCED_EDIT)
-            {
-                //Fields["GPS Target"].guiActive = true;
+                //Actions["GPS Target"].active = false;
                 //Fields["GPS Target"].guiActiveEditor = true;
+
             }
 
             if (GuidanceMode != GuidanceModes.AGM)
@@ -591,16 +588,7 @@ namespace BDArmory.Parts
 
         void OnCollisionEnter(Collision col)
 		{
-            if (BDArmorySettings.DRAW_DEBUG_LABELS)
-                Debug.Log("[BDArmory]: Something Collided: " + col.ToString());
-            if (HasExploded || !HasFired) return;            
-
-            if (TimeIndex > 1 && this.part.vessel.Velocity().magnitude > 10f)
-            {
-                Debug.Log("[BDArmory]: Missile Collided - Triggering Detonation");
-                Detonate();
-            }
-            
+            base.CollisionEnter(col);      
         }        
         
 		void SetupAudio()
@@ -758,7 +746,7 @@ namespace BDArmory.Parts
 		    vesselReferenceTransform = refObject.transform;
 		    DetonationDistanceState = DetonationDistanceStates.NotSafe;
             MissileState = MissileStates.Drop;
-		    part.crashTolerance = 9999;
+		    part.crashTolerance = 9999; //to combat stresses of launch, missle generate a lot of G Force
 
             StartCoroutine(MissileRoutine());
 		}
@@ -895,7 +883,9 @@ namespace BDArmory.Parts
                 if (Vector3.Dot(TargetPosition - transform.position, transform.forward) < 0 || noProgress)                
                 {
                     Debug.Log("[BDArmory]: Missile has missed!");
-                    if (vessel.altitude >= maxAltitude && maxAltitude != 0f) Debug.Log("[BDArmory]: CheckMiss trigged by MaxAltitude");
+
+                    if (vessel.altitude >= maxAltitude && maxAltitude != 0f)
+                        Debug.Log("[BDArmory]: CheckMiss trigged by MaxAltitude");
 
                     HasMissed = true;
                     guidanceActive = false;
@@ -1113,8 +1103,8 @@ namespace BDArmory.Parts
                         break;
 
                     case TargetingModes.Radar:
-                        // pretend we have an active radar seeker for ground targets:
 
+                        // pretend we have an active radar seeker for ground targets:
                         TargetSignatureData[] scannedTargets = new TargetSignatureData[5];
                         TargetSignatureData.ResetTSDArray(ref scannedTargets);
                         Ray ray = new Ray(transform.position, TargetPosition - GetForwardTransform());
@@ -1263,9 +1253,8 @@ namespace BDArmory.Parts
 				    if (gpe.Current == null) continue;
 					if(!vessel.InVacuum() && Throttle > 0)
 					{
-						gpe.Current.emit = true;
-                        //gpe.pEmitter.worldVelocity = ParticleTurbulence.Turbulence;
-                        gpe.Current.pEmitter.worldVelocity = 2*ParticleTurbulence.flareTurbulence;
+						gpe.Current.emit = true;                        
+                        gpe.Current.pEmitter.worldVelocity = 2 * ParticleTurbulence.flareTurbulence;
 					}
 					else
 					{
@@ -1313,9 +1302,10 @@ namespace BDArmory.Parts
 
 			if(string.IsNullOrEmpty(boostTransformName))
 			{
-				boostEmitters = pEmitters;
-				boostGaplessEmitters = gaplessEmitters;
+                boostEmitters = pEmitters;                
+                boostGaplessEmitters = gaplessEmitters;
 			}
+
 		    List<KSPParticleEmitter>.Enumerator emitter = boostEmitters.GetEnumerator();
 			while(emitter.MoveNext())
 			{
@@ -1390,6 +1380,7 @@ namespace BDArmory.Parts
 					audioSource.Stop();
 				}
 			    audioSource.volume = Throttle;
+                
                 //particleFx
                 List<KSPParticleEmitter>.Enumerator emitter = pEmitters.GetEnumerator();
 			    while (emitter.MoveNext())
@@ -1410,9 +1401,8 @@ namespace BDArmory.Parts
 				{
 				    if (gpe.Current == null) continue;
                         gpe.Current.pEmitter.maxSize = Mathf.Clamp01(Throttle / Mathf.Clamp((float)vessel.atmDensity, 0.2f, 1f));
-                        gpe.Current.emit = true;
-                        //gpe.pEmitter.worldVelocity = ParticleTurbulence.Turbulence;
-					    gpe.Current.pEmitter.worldVelocity = 2*ParticleTurbulence.flareTurbulence;
+                        gpe.Current.emit = true;                       
+					    gpe.Current.pEmitter.worldVelocity = 2 * ParticleTurbulence.flareTurbulence;
 				}
                 gpe.Dispose();
 
@@ -1608,9 +1598,7 @@ namespace BDArmory.Parts
 
 				lookUpDirection = new Vector3(lookUpDirection.x, 0, 0);
 				lookUpDirection += 10*Vector3.up;
-				//Debug.Log ("lookUpDirection: "+lookUpDirection);
-
-
+                
 				rotationTransform.localRotation = Quaternion.Lerp(rotationTransform.localRotation, Quaternion.LookRotation(Vector3.forward, lookUpDirection), 0.04f);
 				Quaternion finalRotation = rotationTransform.rotation;
 				transform.rotation = originalRotation;
@@ -1618,8 +1606,7 @@ namespace BDArmory.Parts
 
 				vesselReferenceTransform.rotation = Quaternion.LookRotation(-rotationTransform.up, rotationTransform.forward);
 			}
-
-			//aeroTorque = MissileGuidance.DoAeroForces(this, cruiseTarget, liftArea, controlAuthority * steerMult, aeroTorque, finalMaxTorque, limitAoA); 
+			
 			DoAero(cruiseTarget);
 			CheckMiss();
 

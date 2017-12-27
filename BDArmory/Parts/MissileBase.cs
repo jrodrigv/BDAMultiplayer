@@ -9,6 +9,7 @@ using BDArmory.UI;
 using UnityEngine;
 using System.Text;
 using BDArmory.Core;
+using BDArmory.FX;
 
 namespace BDArmory.Parts
 {
@@ -952,7 +953,6 @@ namespace BDArmory.Parts
                   
                     float optimalDistance = (float) (DetonationDistance + missileDistancePerFrame.magnitude);
 
-
                     using (var hitsEnu = Physics.OverlapSphere(vessel.CoM, optimalDistance, 557057).AsEnumerable().GetEnumerator())
                     {
                         while (hitsEnu.MoveNext())
@@ -998,13 +998,34 @@ namespace BDArmory.Parts
                 }
                 else
                 {
-                    DetonationDistance = GetBlastRadius() * 0.05f;
+                    //DetonationDistance = GetBlastRadius() * 0.05f;
+                    DetonationDistance = 0f;
                 }
             }
             if (BDArmorySettings.DRAW_DEBUG_LABELS)
             {
                 Debug.Log("[BDArmory]: DetonationDistance = : " + DetonationDistance);
             }
+        }
+
+        protected void CollisionEnter(Collision col)
+        {
+            if (BDArmorySettings.DRAW_DEBUG_LABELS)
+                Debug.Log("[BDArmory]: Missile Collided");
+
+            if (TimeIndex > 2 && HasFired && col.collider.gameObject.GetComponentInParent<Part>().GetFireFX())
+            {
+                ContactPoint contact = col.contacts[0];
+                Vector3 pos = contact.point;
+                BulletHitFX.AttachFlames(pos, col.collider.gameObject.GetComponentInParent<Part>());
+            }
+
+            if (HasExploded || !HasFired) return;
+
+            if (DetonationDistanceState != DetonationDistanceStates.CheckingProximity) return;    
+            
+            Debug.Log("[BDArmory]: Missile Collided - Triggering Detonation");
+            Detonate();
         }
     }
 }
