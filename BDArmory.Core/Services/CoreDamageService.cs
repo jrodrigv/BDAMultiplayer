@@ -17,7 +17,6 @@ namespace BDArmory.Core.Services
             var damageModule = p.Modules.GetModule<HitpointTracker>();
 
             damageModule.SetDamage(partDamage);
-            Dependencies.Get<DamageEventService>().PublishDamageEvent(p, partDamage, DamageOperation.Set);
         }              
 
         public void AddDamageToPart(Part p, float partDamage)
@@ -25,7 +24,6 @@ namespace BDArmory.Core.Services
             var damageModule = p.Modules.GetModule<HitpointTracker>();
 
             damageModule.AddDamage(partDamage);
-            Dependencies.Get<DamageEventService>().PublishDamageEvent(p, partDamage, DamageOperation.Add);
         }
 
         public void AddDamageToKerbal(KerbalEVA kerbal, float damage)
@@ -33,7 +31,6 @@ namespace BDArmory.Core.Services
             var damageModule = kerbal.part.Modules.GetModule<HitpointTracker>();
 
             damageModule.AddDamageToKerbal(kerbal,damage);
-            Dependencies.Get<DamageEventService>().PublishDamageEvent(kerbal.part, damage, DamageOperation.Add);
         }
     }
 }

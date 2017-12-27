@@ -28,6 +28,7 @@ namespace BDArmory.Core.Extension
             else
             {
                 Dependencies.Get<Interface.IDamageService>().AddDamageToPart(p, damage);
+                Dependencies.Get<DamageEventService>().PublishDamageEvent(p, damage, DamageOperation.Add);
                 if (BDArmorySettings.DRAW_DEBUG_LABELS)
                     Debug.Log("[BDArmory]: Standard Hitpoints Applied : " + damage);
                
@@ -145,18 +146,19 @@ namespace BDArmory.Core.Extension
         /// <summary>
         /// Ballistic Hitpoint Damage
         /// </summary>
-        public static void ApplyHitPoints(Part p, float damage_ ,float caliber,float mass, float multiplier, float impactVelocity,float penetrationfactor)
+        public static void ApplyHitPoints(Part p, float damage ,float caliber,float mass, float multiplier, float impactVelocity,float penetrationfactor)
         {
 
             //////////////////////////////////////////////////////////
             // Apply HitPoints Ballistic
             //////////////////////////////////////////////////////////
-            Dependencies.Get<Interface.IDamageService>().AddDamageToPart(p, damage_);
-            Dependencies.Get<DamageEventService>().PublishDamageEvent(p, damage_, DamageOperation.Add);
+            Dependencies.Get<Interface.IDamageService>().AddDamageToPart(p, damage);
+            Dependencies.Get<DamageEventService>().PublishDamageEvent(p, damage, DamageOperation.Add);
+
             if (BDArmorySettings.DRAW_DEBUG_LABELS)
             {
                 Debug.Log("[BDArmory]: mass: " + mass + " caliber: " + caliber + " multiplier: " + multiplier + " velocity: " + impactVelocity + " penetrationfactor: " + penetrationfactor);
-                Debug.Log("[BDArmory]: Ballistic Hitpoints Applied : " + Math.Round(damage_, 2));
+                Debug.Log("[BDArmory]: Ballistic Hitpoints Applied : " + Math.Round(damage, 2));
             }
 
         }
@@ -171,6 +173,7 @@ namespace BDArmory.Core.Extension
             //////////////////////////////////////////////////////////
 
             Dependencies.Get<Interface.IDamageService>().AddDamageToPart(p, damage);
+            Dependencies.Get<DamageEventService>().PublishDamageEvent(p, damage, DamageOperation.Add);
             if (BDArmorySettings.DRAW_DEBUG_LABELS)
                 Debug.Log("[BDArmory]: Explosive Hitpoints Applied to " + p.name + ": " + Math.Round(damage, 2));
         }
@@ -185,6 +188,7 @@ namespace BDArmory.Core.Extension
             //////////////////////////////////////////////////////////
 
             Dependencies.Get<Interface.IDamageService>().AddDamageToKerbal(kerbal, damage);
+            Dependencies.Get<DamageEventService>().PublishDamageEvent(kerbal.part, damage, DamageOperation.Add);
             if (BDArmorySettings.DRAW_DEBUG_LABELS)
                 Debug.Log("[BDArmory]: Hitpoints Applied to " + kerbal.name + ": " + Math.Round(damage, 2));
 
@@ -204,6 +208,7 @@ namespace BDArmory.Core.Extension
         public static void Destroy(this Part p)
         {
             Dependencies.Get<Interface.IDamageService>().SetDamageToPart(p,-1);
+            Dependencies.Get<DamageEventService>().PublishDamageEvent(p, -1, DamageOperation.Set);
         }
 
         public static bool HasArmor(this Part p)
