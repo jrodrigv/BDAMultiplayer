@@ -227,6 +227,8 @@ namespace BDArmory.Core.Extension
             massToReduce = Math.Max(0.10, Math.Round(massToReduce, 2));
             Dependencies.Get<Interface.IDamageService>().ReduceArmor(p, (float) massToReduce );
 
+            Dependencies.Get<ArmorEventService>().PublishDamageEvent(p, (float) massToReduce);
+
             if (BDArmorySettings.DRAW_DEBUG_LABELS)
             {
                   Debug.Log("[BDArmory]: Armor Removed : " + massToReduce);

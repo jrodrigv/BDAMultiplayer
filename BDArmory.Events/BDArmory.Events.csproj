@@ -30,6 +30,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ArmorEventArgs.cs" />
+    <Compile Include="ArmorEventService.cs" />
     <Compile Include="DamageEventArgs.cs" />
     <Compile Include="DamageEventService.cs" />
     <Compile Include="DamageOperation.cs" />

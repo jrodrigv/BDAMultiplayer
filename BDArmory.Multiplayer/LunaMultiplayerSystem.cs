@@ -24,11 +24,12 @@ namespace BDArmory.Multiplayer
 
         public void RegisterSystem()
         {
-
             try
             {
                 Dependencies.Register<IBdaMessageHandler<DamageEventArgs>, DamageMessageHandler>();
                 Dependencies.Register<IBdaMessageHandler<ExplosionEventArgs>, ExplosionMessageHandler>();
+                Dependencies.Register<IBdaMessageHandler<ArmorEventArgs>, ArmorMessageHandler>();
+
 
                 SystemsContainer.Get<ModApiSystem>().RegisterFixedUpdateModHandler(ModName, HandlerFunction);
                 SuscribeToCoreEvents();
@@ -52,13 +53,17 @@ namespace BDArmory.Multiplayer
 
         private void ProcessReceivedMessage(BdaMessage messageReceived)
         {
-            if (messageReceived.Content is DamageEventArgs)
+            switch (messageReceived.Content)
             {
-               Dependencies.Get<IBdaMessageHandler<DamageEventArgs>>().ProcessMessage((DamageEventArgs) messageReceived.Content);
-            }
-            else if (messageReceived.Content is ExplosionEventArgs)
-            {
-                Dependencies.Get<IBdaMessageHandler<ExplosionEventArgs>>().ProcessMessage((ExplosionEventArgs)messageReceived.Content);
+                case DamageEventArgs _:
+                    Dependencies.Get<IBdaMessageHandler<DamageEventArgs>>().ProcessMessage((DamageEventArgs) messageReceived.Content);
+                    break;
+                case ExplosionEventArgs _:
+                    Dependencies.Get<IBdaMessageHandler<ExplosionEventArgs>>().ProcessMessage((ExplosionEventArgs)messageReceived.Content);
+                    break;
+                case ArmorEventArgs _:
+                    Dependencies.Get<IBdaMessageHandler<ArmorEventArgs>>().ProcessMessage((ArmorEventArgs)messageReceived.Content);
+                    break;
             }
         }
 
@@ -66,6 +71,7 @@ namespace BDArmory.Multiplayer
         {
             Dependencies.Get<DamageEventService>().OnActionExecuted += OnActionExecuted;
             Dependencies.Get<ExplosionEventService>().OnActionExecuted += OnActionExecuted;
+            Dependencies.Get<ArmorEventService>().OnActionExecuted += OnActionExecuted;
         }
 
         private void OnActionExecuted(object sender, EventArgs eventArgs)
