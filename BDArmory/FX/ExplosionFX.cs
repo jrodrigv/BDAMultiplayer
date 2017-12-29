@@ -45,11 +45,8 @@ namespace BDArmory.FX
             StartTime = Time.time;
             MaxTime = (Range / ExplosionVelocity)*3f;
 
-            if (!OnlyVisual)
-            {
-                CalculateBlastEvents();
-            }
-
+            CalculateBlastEvents();
+            
             PEmitters = gameObject.GetComponentsInChildren<KSPParticleEmitter>();
             IEnumerator<KSPParticleEmitter> pe = PEmitters.AsEnumerable().GetEnumerator();
             while (pe.MoveNext())
@@ -348,8 +345,11 @@ namespace BDArmory.FX
                         BDArmorySettings.EXP_IMP_MOD,
                         eventToExecute.HitPoint + part.rb.velocity * TimeIndex);
 
-                    part.AddExplosiveDamage(blastInfo.Damage,
-                                            Caliber, IsMissile);
+                    if (!OnlyVisual)
+                    {
+                        part.AddExplosiveDamage(blastInfo.Damage,
+                                                           Caliber, IsMissile); 
+                    }
                 }
                 else
                 {
