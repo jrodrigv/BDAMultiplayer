@@ -425,9 +425,6 @@ namespace BDArmory.FX
 
         public static void CreateVisualExplosion(Vector3 position, float tntMassEquivalent, string explModelPath, string soundPath, Vector3 direction = default(Vector3))
         {
-
-            Dependencies.Get<ExplosionEventService>().PublishExplosionEvent(position, tntMassEquivalent, explModelPath, soundPath, direction);
-
             var go = GameDatabase.Instance.GetModel(explModelPath);
             var soundClip = GameDatabase.Instance.GetAudioClip(soundPath);
 
