@@ -2,6 +2,7 @@
 
 namespace BDArmory.Events
 {
+    [Serializable]
     public class ArmorEventArgs : EventArgs
     {
         public Guid VesselId { get; set; }
