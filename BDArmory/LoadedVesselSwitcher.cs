@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using BDArmory.Core;
 using BDArmory.UI;
 using UnityEngine;
 
@@ -123,6 +124,8 @@ namespace BDArmory
 
         private void Hotkeys()
         {
+            if (BDArmorySettings.MULTIPLAYER_ACTIVE) return;
+
             if (Input.GetKeyDown(KeyCode.PageDown))
                 SwitchToNextVessel();
             if (Input.GetKeyDown(KeyCode.PageUp))
@@ -222,8 +225,9 @@ namespace BDArmory
                 //guard toggle
                 GUIStyle guardStyle = wma.Current.guardMode ? HighLogic.Skin.box : HighLogic.Skin.button;
                 Rect guardButtonRect = new Rect(_margin + vesselButtonWidth, lineY, _buttonHeight, _buttonHeight);
-                if (GUI.Button(guardButtonRect, "G", guardStyle))
-                    wma.Current.ToggleGuardMode();
+
+                ToggleGuardMode(guardButtonRect, guardStyle, wma);
+                  
 
                 //AI toggle
                 if (wma.Current.pilotAI)
@@ -231,18 +235,13 @@ namespace BDArmory
                     GUIStyle aiStyle = wma.Current.pilotAI.pilotEnabled ? HighLogic.Skin.box : HighLogic.Skin.button;
                     Rect aiButtonRect = new Rect(_margin + vesselButtonWidth + _buttonHeight, lineY, _buttonHeight,
                         _buttonHeight);
-                    if (GUI.Button(aiButtonRect, "P", aiStyle))
-                        wma.Current.pilotAI.TogglePilot();
+                    TogglePilotAI(aiButtonRect, aiStyle, wma);
                 }
 
                 //team toggle
                 Rect teamButtonRect = new Rect(_margin + vesselButtonWidth + _buttonHeight + _buttonHeight, lineY,
                     _buttonHeight, _buttonHeight);
-                if (GUI.Button(teamButtonRect, "T", HighLogic.Skin.button))
-                {
-                    _wmToSwitchTeam = wma.Current;
-                    _teamSwitchDirty = true;
-                }
+                ToggleTeam(teamButtonRect, wma);
                 vesselLineA++;
             }
             wma.Dispose();
@@ -273,8 +272,7 @@ namespace BDArmory
                 //guard toggle
                 GUIStyle guardStyle = wmb.Current.guardMode ? HighLogic.Skin.box : HighLogic.Skin.button;
                 Rect guardButtonRect = new Rect(_margin + vesselButtonWidth, lineY, _buttonHeight, _buttonHeight);
-                if (GUI.Button(guardButtonRect, "G", guardStyle))
-                    wmb.Current.ToggleGuardMode();
+                ToggleGuardMode(guardButtonRect, guardStyle, wmb);
 
                 //AI toggle
                 if (wmb.Current.pilotAI)
@@ -282,24 +280,66 @@ namespace BDArmory
                     GUIStyle aiStyle = wmb.Current.pilotAI.pilotEnabled ? HighLogic.Skin.box : HighLogic.Skin.button;
                     Rect aiButtonRect = new Rect(_margin + vesselButtonWidth + _buttonHeight, lineY, _buttonHeight,
                         _buttonHeight);
-                    if (GUI.Button(aiButtonRect, "P", aiStyle))
-                        wmb.Current.pilotAI.TogglePilot();
+                    TogglePilotAI(aiButtonRect, aiStyle, wmb);
                 }
 
                 //team toggle
                 Rect teamButtonRect = new Rect(_margin + vesselButtonWidth + _buttonHeight + _buttonHeight, lineY,
                     _buttonHeight, _buttonHeight);
-                if (GUI.Button(teamButtonRect, "T", HighLogic.Skin.button))
-                {
-                    _wmToSwitchTeam = wmb.Current;
-                    _teamSwitchDirty = true;
-                }
+                ToggleTeam(teamButtonRect, wmb);
                 vesselLineB++;
             }
             height += vesselLineB * (_buttonHeight + _buttonGap);
             height += _margin;
 
             _windowHeight = height;
+        }
+
+        private void ToggleTeam(Rect teamButtonRect, List<MissileFire>.Enumerator wma)
+        {
+            if (GUI.Button(teamButtonRect, "T", HighLogic.Skin.button))
+            {
+                if (!BDArmorySettings.MULTIPLAYER_ACTIVE)
+                {
+                    _wmToSwitchTeam = wma.Current;
+                    _teamSwitchDirty = true;
+                }
+                else if (wma.Current.vessel.isActiveVessel)
+                {
+                    _wmToSwitchTeam = wma.Current;
+                    _teamSwitchDirty = true;
+                }
+            }
+        }
+
+        private static void TogglePilotAI(Rect aiButtonRect, GUIStyle aiStyle, List<MissileFire>.Enumerator wma)
+        {
+            if (GUI.Button(aiButtonRect, "P", aiStyle))
+            {
+                if (!BDArmorySettings.MULTIPLAYER_ACTIVE)
+                {
+                    wma.Current.pilotAI.TogglePilot();
+                }
+                else if (wma.Current.vessel.isActiveVessel)
+                {
+                    wma.Current.pilotAI.TogglePilot();
+                }
+            }
+        }
+
+        private static void ToggleGuardMode(Rect guardButtonRect, GUIStyle guardStyle, List<MissileFire>.Enumerator wma)
+        {
+            if (GUI.Button(guardButtonRect, "G", guardStyle))
+            {
+                if (!BDArmorySettings.MULTIPLAYER_ACTIVE)
+                {
+                    wma.Current.ToggleGuardMode();
+                }
+                else if (wma.Current.vessel.isActiveVessel)
+                {
+                    wma.Current.ToggleGuardMode();
+                }
+            }
         }
 
         private string UpdateVesselStatus(MissileFire wm, GUIStyle vButtonStyle)
@@ -405,6 +445,8 @@ namespace BDArmory
         // Extracted method, so we dont have to call these two lines everywhere
         private void ForceSwitchVessel(Vessel v)
         {
+            if (BDArmorySettings.MULTIPLAYER_ACTIVE) return;
+
             FlightGlobals.ForceSetActiveVessel(v);
             FlightInputHandler.ResumeVesselCtrlState(v);
         }

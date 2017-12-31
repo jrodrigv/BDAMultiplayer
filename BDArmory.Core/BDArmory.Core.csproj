@@ -45,7 +45,6 @@
     <Compile Include="Services\CoreDamageService.cs" />
     <Compile Include="BDArmorySettings.cs" />
     <Compile Include="Utils\BlastPhysicsUtils.cs" />
-    <Compile Include="Utils\BulletPhysics.cs" />
     <Compile Include="Utils\DebugUtils.cs" />
     <Compile Include="Utils\BDAMath.cs" />
   </ItemGroup>

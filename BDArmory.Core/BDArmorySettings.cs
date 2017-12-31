@@ -44,5 +44,9 @@ namespace BDArmory.Core
         [BDAPersistantSettingsField] public static int MAX_FIRES_PER_VESSEL = 10; //controls fx for penetration only for landed or splashed
         [BDAPersistantSettingsField] public static float FIRELIFETIME_IN_SECONDS = 90f; //controls fx for penetration only for landed or splashed
         [BDAPersistantSettingsField] public static bool PERFORMANCE_LOGGING = false;
+
+        //Only runtime settings
+
+        public static bool MULTIPLAYER_ACTIVE = false;
     }
 }
