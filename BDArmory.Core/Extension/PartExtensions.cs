@@ -249,12 +249,12 @@ namespace BDArmory.Core.Extension
             return Mathf.Max(1, p.Modules.GetModule<HitpointTracker>().Armor);
         }
 
-        public static float GetDamagePercentatge(this Part p)
+        public static float GetDamagePercentage(this Part p)
         {
             if (p == null) return 0;
 
-            float damage_ = p.Damage();
-            float maxDamage_ = p.MaxDamage();
+            float damage_ = p.Modules.GetModule<HitpointTracker>().Hitpoints;
+            float maxDamage_ = p.Modules.GetModule<HitpointTracker>().GetMaxHitpoints();
 
             return damage_ / maxDamage_;
         }
@@ -404,15 +404,15 @@ namespace BDArmory.Core.Extension
             return damage;
         }
 
-        public static void CheckDamageFX(Part part)
+        private static void CheckDamageFX(Part part)
         {
-            if (part.GetComponent<ModuleEngines>() != null && part.GetDamagePercentatge() <= 0.35f)
+            if (part.GetComponent<ModuleEngines>() != null && part.GetDamagePercentage() <= 0.35f)
             {
                 part.gameObject.AddOrGetComponent<DamageFX>();
                 DamageFX.engineDamaged = true;
             }
 
-            if (part.GetComponent<ModuleLiftingSurface>() != null && part.GetDamagePercentatge() <= 0.35f)
+            if (part.GetComponent<ModuleLiftingSurface>() != null && part.GetDamagePercentage() <= 0.35f)
             {
                 //part.gameObject.AddOrGetComponent<DamageFX>();
             }

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace BDArmory.Core.Extension
+namespace BDArmory.Core
 {
     public class DamageFX : MonoBehaviour
     {
