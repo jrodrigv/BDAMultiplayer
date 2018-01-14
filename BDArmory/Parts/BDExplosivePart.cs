@@ -16,6 +16,12 @@ namespace BDArmory.Parts
 	     UI_Label(affectSymCounterparts = UI_Scene.All, controlEnabled = true, scene = UI_Scene.All)]
 	    public float blastRadius = 10;
 
+	    [KSPField]
+	    public string explModelPath = "BDArmory/Models/explosion/explosion";
+
+	    [KSPField]
+	    public string explSoundPath = "BDArmory/Sounds/explode1";
+
         [KSPAction("Arm")]
         public void ArmAG(KSPActionParam param)
         {
@@ -99,7 +105,7 @@ namespace BDArmory.Parts
 			        direction = (part.transform.position + part.rb.velocity * Time.deltaTime).normalized;
 			    }
 			    ExplosionFx.CreateExplosion(part.transform.position, tntMass,
-			        "BDArmory/Models/explosion/explosionLarge", "BDArmory/Sounds/explode1", true, 0, part, direction);
+			        explModelPath, explSoundPath, true, 0, part, direction);
                 hasDetonated = true;
 			}
 		}
@@ -110,7 +116,7 @@ namespace BDArmory.Parts
 	        {
 	            part.Destroy();
 	            ExplosionFx.CreateExplosion(part.transform.position, tntMass,
-	                "BDArmory/Models/explosion/explosionLarge", "BDArmory/Sounds/explode1", true, 0, part);
+	                explModelPath, explSoundPath, true, 0, part);
 	        }
 	    }
 
