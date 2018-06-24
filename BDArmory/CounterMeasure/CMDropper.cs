@@ -26,14 +26,15 @@ namespace BDArmory.CounterMeasure
         public CountermeasureTypes cmType = CountermeasureTypes.Flare;
         [KSPField] public string countermeasureType = "flare";
 
-        [KSPField] public float ejectVelocity = 30;
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true, guiName = "Eject Velocity"),
+        UI_FloatRange(controlEnabled = true, scene = UI_Scene.Editor, minValue = 1f, maxValue = 200f, stepIncrement = 1f)]
+        public float ejectVelocity = 30;
 
         [KSPField] public string ejectTransformName;
         Transform ejectTransform;
 
         [KSPField] public string effectsTransformName = string.Empty;
         Transform effectsTransform;
-
 
         AudioSource audioSource;
         AudioClip cmSound;
@@ -88,6 +89,11 @@ namespace BDArmory.CounterMeasure
 
                 UpdateVolume();
                 BDArmorySetup.OnVolumeChange += UpdateVolume;
+            }
+            else
+            {
+                SetupCMType();
+                Fields["ejectVelocity"].guiActiveEditor = cmType != CountermeasureTypes.Smoke;
             }
         }
 
@@ -145,6 +151,22 @@ namespace BDArmory.CounterMeasure
             return null;
         }
 
+        void SetupCMType()
+        {
+            countermeasureType = countermeasureType.ToLower();
+            switch (countermeasureType)
+            {
+                case "flare":
+                    cmType = CountermeasureTypes.Flare;
+                    break;
+                case "chaff":
+                    cmType = CountermeasureTypes.Chaff;
+                    break;
+                case "smoke":
+                    cmType = CountermeasureTypes.Smoke;
+                    break;
+            }
+        }
         void SetupCM()
         {
             countermeasureType = countermeasureType.ToLower();
@@ -247,6 +269,10 @@ namespace BDArmory.CounterMeasure
         {
             yield return new WaitForSeconds(0.2f);
             GameObject smokeCMObject = smokePool.GetPooledObject();
+            CMSmoke smoke = smokeCMObject.GetComponent<CMSmoke>();
+            smoke.velocity = part.rb.velocity + (ejectVelocity * transform.up) +
+                             (UnityEngine.Random.Range(-3f, 3f) * transform.forward) +
+                             (UnityEngine.Random.Range(-3f, 3f) * transform.right);
             smokeCMObject.SetActive(true);
             smokeCMObject.transform.position = ejectTransform.position + (10*ejectTransform.forward);
             float longestLife = 0;

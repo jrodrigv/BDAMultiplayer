@@ -150,12 +150,12 @@ namespace BDArmory.UI
 		}
 		public void ShowToolbarGUI()
 		{
-			BDArmorySetup.toolbarGuiEnabled = true;	
+			BDArmorySetup.windowBDAToolBarEnabled = true;	
 		}
 
 		public void HideToolbarGUI()
 		{
-			BDArmorySetup.toolbarGuiEnabled = false;	
+			BDArmorySetup.windowBDAToolBarEnabled = false;	
 		}
 		void Dummy()
 		{}
@@ -542,11 +542,8 @@ namespace BDArmory.UI
 								Debug.Log("[BDArmory]: ==== BDA GPS Target string was empty! ====");
 								return;
 							}
-							else
-							{
-								StringToGPSList(targetString);
-								Debug.Log("[BDArmory]: ==== Loaded BDA GPS Targets ====");
-							}
+							StringToGPSList(targetString);
+							Debug.Log("[BDArmory]: ==== Loaded BDA GPS Targets ====");
 						}
 						else
 						{
@@ -1008,14 +1005,17 @@ namespace BDArmory.UI
         //checks to see if a friendly is too close to the gun trajectory to fire them
         public static bool CheckSafeToFireGuns(MissileFire weaponManager, Vector3 aimDirection, float safeDistance, float cosUnsafeAngle)
         {
+            if (weaponManager == null) return false;
+            if (weaponManager.vessel == null) return false;
+
             BDArmorySetup.BDATeams team = weaponManager.team ? BDArmorySetup.BDATeams.A : BDArmorySetup.BDATeams.B;
             List<TargetInfo>.Enumerator friendlyTarget = TargetDatabase[team].GetEnumerator();
             while (friendlyTarget.MoveNext())
             {
-                if (friendlyTarget.Current == null || !friendlyTarget.Current.Vessel) continue;
-                float friendlyPosDot = Vector3.Dot(friendlyTarget.Current.position - weaponManager.vessel.vesselTransform.position, aimDirection);
+                if (friendlyTarget.Current == null || !friendlyTarget.Current.Vessel || friendlyTarget.Current.weaponManager == weaponManager) continue;
+                float friendlyPosDot = Vector3.Dot(friendlyTarget.Current.position - weaponManager.vessel.CoM, aimDirection);
                 if (!(friendlyPosDot > 0)) continue;
-                float friendlyDistance = (friendlyTarget.Current.position - weaponManager.vessel.vesselTransform.position).magnitude;
+                float friendlyDistance = (friendlyTarget.Current.position - weaponManager.vessel.CoM).magnitude;
                 float friendlyPosDotNorm = friendlyPosDot / friendlyDistance;       //scale down the dot to be a 0-1 so we can check it againts cosUnsafeAngle
 
                 if (friendlyDistance < safeDistance && cosUnsafeAngle < friendlyPosDotNorm)           //if it's too close and it's within the Unsafe Angle, don't fire

@@ -36,15 +36,15 @@ namespace BDArmory
         
 		public TargetSignatureData(Vessel v, float _signalStrength)
 		{
-			orbital = false;
-			orbit = null;
+			orbital = v.InOrbit();
+			orbit = v.orbit;
 
             timeAcquired = Time.time;
             vessel = v;
             velocity = v.Velocity();
 
             geoPos =  VectorUtils.WorldPositionToGeoCoords(v.CoM, v.mainBody);
-			acceleration = v.acceleration;
+			acceleration = v.acceleration_immediate;
 			exists = true;
 			
 			signalStrength = _signalStrength;
@@ -121,16 +121,8 @@ namespace BDArmory
 		{
 			get
 			{
-				if(orbital)
-				{
-					return orbit.pos.xzy;
-				}
-				else
-				{
-					//return FlightGlobals.currentMainBody.GetWorldSurfacePosition(geoPos.x, geoPos.y, geoPos.z);
-					return VectorUtils.GetWorldSurfacePostion(geoPos, FlightGlobals.currentMainBody);
-				}
-			}
+			    return VectorUtils.GetWorldSurfacePostion(geoPos, FlightGlobals.currentMainBody);
+            }
 			set
 			{
 				geoPos = VectorUtils.WorldPositionToGeoCoords(value, FlightGlobals.currentMainBody);
@@ -141,15 +133,8 @@ namespace BDArmory
 		{
 			get
 			{
-				if(orbital)
-				{
-					return orbit.getPositionAtUT(Planetarium.GetUniversalTime()).xzy;
-				}
-				else
-				{
-					return position + (velocity * age) + (0.5f * acceleration * age * age);
-				}
-			}
+			    return position + (velocity * age);
+            }
 		}
 
         public Vector3 predictedPositionWithChaffFactor
@@ -173,14 +158,8 @@ namespace BDArmory
                     }
                 }
 
-                if (orbital)
-                {
-                    return orbit.getPositionAtUT(Planetarium.GetUniversalTime()).xzy + posDistortion;
-                }
-                else
-                {
-                    return position + (velocity * age) + (0.5f * acceleration * age * age) + posDistortion;
-                }
+                return position + (velocity * age) + posDistortion;
+             
             }
         }
 

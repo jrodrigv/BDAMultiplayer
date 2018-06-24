@@ -145,13 +145,26 @@ namespace BDArmory.Radar
                 EnableRadar();
             }
         }
+
+        [KSPAction("Target Next")]
+        public void TargetNext(KSPActionParam param)
+        {
+            vesselRadarData.TargetNext();
+        }
+
+        [KSPAction("Target Prev")]
+        public void TargetPrev(KSPActionParam param)
+        {
+            vesselRadarData.TargetPrev();
+        }
+
         #endregion
 
 
         #region Part members
         //locks
         [KSPField(isPersistant = false, guiActive = true, guiActiveEditor = false, guiName = "Current Locks")]
-        private int currLocks;
+        public int currLocks;
         public bool locked
         {
             get { return currLocks > 0; }
@@ -185,7 +198,7 @@ namespace BDArmory.Radar
         {
             get { return radarDetectionCurve.minTime; }
         }
-        [KSPField(isPersistant = false, guiActive = true, guiActiveEditor = true, guiName = "Detection Range")]
+        //[KSPField(isPersistant = false, guiActive = true, guiActiveEditor = true, guiName = "Detection Range")]
         public float radarMaxDistanceDetect
         {
             get { return radarDetectionCurve.maxTime; }
@@ -194,7 +207,7 @@ namespace BDArmory.Radar
         {
             get { return radarLockTrackCurve.minTime; }
         }
-        [KSPField(isPersistant = false, guiActive = true, guiActiveEditor = true, guiName = "Locking Range")]
+        //[KSPField(isPersistant = false, guiActive = true, guiActiveEditor = true, guiName = "Locking Range")]
         public float radarMaxDistanceLockTrack
         {
             get { return radarLockTrackCurve.maxTime; }
@@ -355,7 +368,7 @@ namespace BDArmory.Radar
                 }
             }
         }
-      
+
 
         public override void OnStart(StartState state)
         {
@@ -406,14 +419,6 @@ namespace BDArmory.Radar
                     break;
                 }
                 turr.Dispose();
-                
-                List<MissileFire>.Enumerator wm = vessel.FindPartModulesImplementing<MissileFire>().GetEnumerator();
-                while (wm.MoveNext())
-                {
-                    if (wm.Current == null) continue;
-                    wm.Current.radars.Add(this);
-                }
-                wm.Dispose();
 
                 //GameEvents.onVesselGoOnRails.Add(OnGoOnRails);    //not needed
                 EnsureVesselRadarData();
@@ -558,6 +563,7 @@ namespace BDArmory.Radar
                     weaponManager.slavedPosition = lockedTarget.predictedPosition;
                     weaponManager.slavedVelocity = lockedTarget.velocity;
                     weaponManager.slavedAcceleration = lockedTarget.acceleration;
+                    weaponManager.slavedTarget = lockedTarget;
                 }
             }
         }

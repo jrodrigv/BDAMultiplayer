@@ -52,7 +52,6 @@ namespace BDArmory
         public float tracerLuminance = 1;
         public float initialSpeed;
 
-        public Vector3 prevPosition;
         public Vector3 currPosition;
 
         //explosive parameters
@@ -72,8 +71,7 @@ namespace BDArmory
         public float maxAirDetonationRange = 3500f;
         float randomWidthScale = 1;
         LineRenderer bulletTrail;
-        Vector3 sourceOriginalV;
-        public float maxDistance;
+        public float timeToLiveUntil;
         Light lightFlash;
         bool wasInitiated;
         public Vector3 currentVelocity;
@@ -84,7 +82,6 @@ namespace BDArmory
         public float apBulletMod = 0;
         public float ballisticCoefficient;
         public float flightTimeElapsed;
-        bool collisionEnabled;
         public static Shader bulletShader;
         public static bool shaderInitialized;
         private float impactVelocity;
@@ -99,11 +96,11 @@ namespace BDArmory
         public Rigidbody rb;
         #endregion
 
+        private Vector3[] linePositions = new Vector3[2];
         void OnEnable()
         {
-
             startPosition = transform.position;
-            collisionEnabled = false;
+            initialSpeed = currentVelocity.magnitude; // this is the velocity used for drag estimations (only), use total velocity, not muzzle velocity
 
             if (!wasInitiated)
             {
@@ -118,10 +115,6 @@ namespace BDArmory
             {
                 currentColor = startColor;
             }
-
-            prevPosition = gameObject.transform.position;
-
-            sourceOriginalV = sourceVessel.Velocity();
 
             if (lightFlash == null || !gameObject.GetComponent<Light>())
             {
@@ -141,11 +134,12 @@ namespace BDArmory
 
             if (!wasInitiated)
             {
-                bulletTrail.SetVertexCount(2);
+                bulletTrail.positionCount = linePositions.Length;
             }
+            linePositions[0] = transform.position;
+            linePositions[1] = transform.position;
+            bulletTrail.SetPositions(linePositions);
 
-            bulletTrail.SetPosition(0, transform.position);
-            bulletTrail.SetPosition(1, transform.position);
 
             if (!shaderInitialized)
             {
@@ -172,7 +166,7 @@ namespace BDArmory
             StartCoroutine(FrameDelayedRoutine());
         }
 
-        void OnDestory()
+        void OnDestroy()
         {
             StopCoroutine(FrameDelayedRoutine());
         }
@@ -181,7 +175,6 @@ namespace BDArmory
         {
             yield return new WaitForFixedUpdate();
             lightFlash.enabled = false;
-            collisionEnabled = true;
         }
 
         void OnWillRenderObject()
@@ -203,11 +196,19 @@ namespace BDArmory
 
         void FixedUpdate()
         {
-            float distanceFromStart = Vector3.Distance(transform.position, startPosition);
             if (!gameObject.activeInHierarchy)
             {
                 return;
             }
+
+            //floating origin and velocity offloading corrections
+            if (!FloatingOrigin.Offset.IsZero() || !Krakensbane.GetFrameVelocity().IsZero())
+            {
+                transform.position -= FloatingOrigin.OffsetNonKrakensbane;
+                startPosition -= FloatingOrigin.OffsetNonKrakensbane;
+            }
+
+            float distanceFromStart = Vector3.Distance(transform.position, startPosition);
 
             //calculate flight time for drag purposes
             flightTimeElapsed += Time.fixedDeltaTime;
@@ -228,14 +229,13 @@ namespace BDArmory
 
             if (tracerLength == 0)
             {
-                bulletTrail.SetPosition(0,
-                    transform.position +
-                    (currentVelocity * tracerDeltaFactor * 0.45f * Time.fixedDeltaTime));
+                // visual tracer velocity is relative to the observer
+                linePositions[0] = transform.position +
+                                   ((currentVelocity - FlightGlobals.ActiveVessel.Velocity()) * tracerDeltaFactor * 0.45f * Time.fixedDeltaTime);
             }
             else
             {
-                bulletTrail.SetPosition(0,
-                    transform.position + ((currentVelocity - sourceOriginalV).normalized * tracerLength));
+                linePositions[0] = transform.position + ((currentVelocity - FlightGlobals.ActiveVessel.Velocity()).normalized * tracerLength);
             }
 
             if (fadeColor)
@@ -243,18 +243,18 @@ namespace BDArmory
                 FadeColor();
                 bulletTrail.material.SetColor("_TintColor", currentColor * tracerLuminance);
             }
+            linePositions[1] = transform.position;
+         
+            bulletTrail.SetPositions(linePositions);
+            currPosition = transform.position;
 
-            bulletTrail.SetPosition(1, transform.position);
-
-            currPosition = gameObject.transform.position;
-
-            if (distanceFromStart > maxDistance)//kill bullet if it goes past the max allowed distance
+            if (Time.time > timeToLiveUntil) //kill bullet when TTL ends
             {
                 KillBullet();
                 return;
             }
 
-            if (collisionEnabled)
+            // bullet collision block
             {
                 //reset our hit variables to default state
                 hasPenetrated = true;
@@ -293,14 +293,26 @@ namespace BDArmory
                             if (hitEVA != null)
                             {
                                 hitPart = hitEVA.part;
-                                impactVelocity = currentVelocity.magnitude + dragVelocity;
+                                // relative velocity, separate from the below statement, because the hitpart might be assigned only above
+                                if (hitPart?.rb != null)
+                                    impactVelocity = (currentVelocity * (1 - dragVelocity / currentVelocity.magnitude)
+                                        - (hitPart.rb.velocity + Krakensbane.GetFrameVelocityV3f())).magnitude;
+                                else
+                                    impactVelocity = currentVelocity.magnitude - dragVelocity;
                                 ApplyDamage(hitPart, hit, 1, 1);
                                 break;
                             }
 
-                            if (hitPart?.vessel == sourceVessel) return;  //avoid autohit;                     
+                            if (hitPart?.vessel == sourceVessel) continue;  //avoid autohit;                     
 
-                            float hitAngle = Vector3.Angle(currentVelocity, -hit.normal);
+                            Vector3 impactVector = currentVelocity;
+                            if (hitPart?.rb != null)
+                                // using relative velocity vector instead of just bullet velocity
+                                // since KSP vessels might move faster than bullets
+                                impactVector = (currentVelocity * (1 - dragVelocity / currentVelocity.magnitude) 
+                                    - (hitPart.rb.velocity + Krakensbane.GetFrameVelocityV3f()));
+
+                            float hitAngle = Vector3.Angle(impactVector, -hit.normal);
 
                             if (CheckGroundHit(hitPart, hit))
                             {
@@ -319,7 +331,7 @@ namespace BDArmory
 
                             //Standard Pipeline Hitpoints, Armor and Explosives
 
-                            impactVelocity = currentVelocity.magnitude + dragVelocity;
+                            impactVelocity = impactVector.magnitude;
                             float anglemultiplier = (float)Math.Cos(Math.PI * hitAngle / 180.0);
 
                             float penetrationFactor = CalculateArmorPenetration(hitPart, anglemultiplier, hit);
@@ -348,7 +360,6 @@ namespace BDArmory
                                 //if (explosive && penetrationFactor < 3 || currentVelocity.magnitude <= 800f)
                                 if (explosive)
                                 {
-                                    prevPosition = currPosition;
                                     //move bullet            
                                     transform.position += (currentVelocity * Time.fixedDeltaTime) / 3;
 
@@ -363,16 +374,13 @@ namespace BDArmory
 
                                 if (hitPart.rb != null)
                                 {
-                                    Vector3 finalVelocityVector = hitPart.rb.velocity - currentVelocity;
-                                    float finalVelocityMagnitude = finalVelocityVector.magnitude;
-
-                                    float forceAverageMagnitude = finalVelocityMagnitude * finalVelocityMagnitude *
+                                    float forceAverageMagnitude = impactVelocity * impactVelocity *
                                                           (1f / hit.distance) * (bulletMass - tntMass);
 
                                     float accelerationMagnitude =
                                         forceAverageMagnitude / (hitPart.vessel.GetTotalMass() * 1000);
 
-                                    hitPart?.rb.AddForceAtPosition(-finalVelocityVector.normalized * accelerationMagnitude, hit.point, ForceMode.Acceleration);
+                                    hitPart?.rb.AddForceAtPosition(impactVector.normalized * accelerationMagnitude, hit.point, ForceMode.Acceleration);
 
                                     if (BDArmorySettings.DRAW_DEBUG_LABELS)
                                         Debug.Log("[BDArmory]: Force Applied " + Math.Round(accelerationMagnitude, 2) + "| Vessel mass in kgs=" + hitPart.vessel.GetTotalMass() * 1000 + "| bullet effective mass =" + (bulletMass - tntMass));
@@ -431,14 +439,7 @@ namespace BDArmory
                 return;
             }
 
-            //////////////////////////////////////////////////
-            //Bullet Translation 
-            //////////////////////////////////////////////////
-
-            prevPosition = currPosition;
-            
-
-            if (bulletDrop && FlightGlobals.RefFrameIsRotating)
+            if (bulletDrop)
             {
                 // Gravity???
                 var gravity_ = FlightGlobals.getGeeForceAtPosition(transform.position);
@@ -501,11 +502,20 @@ namespace BDArmory
 
             if (BDArmorySettings.BULLET_HITS)
             {
-                BulletHitFX.CreateBulletHit(hitPart,hit.point, hit, hit.normal, hasRichocheted, caliber,penetrationfactor);
+                BulletHitFX.CreateBulletHit(hitPart, hit.point, hit, hit.normal, hasRichocheted, caliber,
+                    penetrationfactor);
             }
 
-            hitPart.AddBallisticDamage(bulletMass, caliber, multiplier, penetrationfactor,
-                                        bulletDmgMult,impactVelocity, explosive);
+            if (explosive)
+            {
+                hitPart.AddBallisticDamage(bulletMass - tntMass, caliber, multiplier, penetrationfactor,
+                    bulletDmgMult, impactVelocity);
+            }
+            else
+            {
+                hitPart.AddBallisticDamage(bulletMass, caliber, multiplier, penetrationfactor,
+                    bulletDmgMult, impactVelocity);
+            }
         }
 
         private void CalculateDragNumericalIntegration()
@@ -578,7 +588,6 @@ namespace BDArmory
                 //impactVelocity = currentVelocity.magnitude;
 
                 flightTimeElapsed -= Time.fixedDeltaTime;
-                prevPosition = transform.position;
             }
             else
             {
@@ -651,7 +660,7 @@ namespace BDArmory
             {
                 if (BDArmorySettings.BULLET_HITS)
                 {
-                    BulletHitFX.CreateBulletHit(hitPart,hit.point, hit, hit.normal, true, 0,0);
+                    BulletHitFX.CreateBulletHit(hitPart,hit.point, hit, hit.normal, true, caliber,0);
                 }
 
                 return true;
@@ -710,10 +719,9 @@ namespace BDArmory
             float fov = c.fieldOfView;
             float factor = (fov / 60) * resizeFactor *
                            Mathf.Clamp(Vector3.Distance(transform.position, c.transform.position), 0, 3000) / 50;
-            float width1 = tracerStartWidth * factor * randomWidthScale;
-            float width2 = tracerEndWidth * factor * randomWidthScale;
+            bulletTrail.startWidth = tracerStartWidth * factor * randomWidthScale;
+            bulletTrail.endWidth = tracerEndWidth * factor * randomWidthScale;
 
-            bulletTrail.SetWidth(width1, width2);
         }
 
         void KillBullet()
@@ -750,7 +758,7 @@ namespace BDArmory
         bool RicochetScenery(float hitAngle)
         {
             float reflectRandom = UnityEngine.Random.Range(-75f, 90f);
-            if (reflectRandom > 90 - hitAngle)
+            if (reflectRandom > 90 - hitAngle && caliber <= 30f)
             {
                 return true;
             }
@@ -764,7 +772,7 @@ namespace BDArmory
             //ricochet            
             if (BDArmorySettings.BULLET_HITS)
             {
-                BulletHitFX.CreateBulletHit(p,hit.point, hit, hit.normal, true,0,0);
+                BulletHitFX.CreateBulletHit(p,hit.point, hit, hit.normal, true,caliber,0);
             }
 
             tracerStartWidth /= 2;

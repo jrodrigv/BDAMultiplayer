@@ -49,6 +49,7 @@ namespace BDArmory.FX
 
         public static void SpawnDecal(RaycastHit hit,Part hitPart, float caliber, float penetrationfactor)
         {
+            if (!BDArmorySettings.BULLET_DECALS) return;
             ObjectPool decalPool_;
 
             if (caliber >= 90f)
@@ -91,7 +92,7 @@ namespace BDArmory.FX
         
         private static bool CanFlamesBeAttached(Part hitPart)
         {
-            if (!hitPart.HasFuel())
+            if (!hitPart.vessel.LandedOrSplashed || !hitPart.HasFuel()) //removing FX from flight for now due to performance issues
                 return false;            
 
             if (hitPart.vessel.LandedOrSplashed)
@@ -217,7 +218,7 @@ namespace BDArmory.FX
                 go = GameDatabase.Instance.GetModel("BDArmory/FX/PenFX");
             }
 
-            if(caliber !=0 && !hitPart.IgnoreDecal())
+            if( (hitPart != null) && caliber !=0 && !hitPart.IgnoreDecal())
             {
                 SpawnDecal(hit,hitPart,caliber,penetrationfactor); //No bullet decals for laser or ricochet
             }
@@ -245,7 +246,6 @@ namespace BDArmory.FX
             }
             pe.Dispose();
         }
-
 
         public static void AttachFlames(RaycastHit hit, Part hitPart, float caliber)
         {

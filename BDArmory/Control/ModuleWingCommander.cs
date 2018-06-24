@@ -13,9 +13,9 @@ namespace BDArmory.Control
     {
         public MissileFire weaponManager;
 
-        List<BDModulePilotAI> friendlies;
+        List<IBDAIControl> friendlies;
 
-        List<BDModulePilotAI> wingmen;
+        List<IBDAIControl> wingmen;
         [KSPField(isPersistant = true)] public string savedWingmen = string.Empty;
 
         //[KSPField(guiActive = false, guiActiveEditor = false, guiName = "")]
@@ -46,8 +46,8 @@ namespace BDArmory.Control
             RefreshFriendlies();
 
             //TEMPORARY
-            wingmen = new List<BDModulePilotAI>();
-            List<BDModulePilotAI>.Enumerator ps = friendlies.GetEnumerator();
+            wingmen = new List<IBDAIControl>();
+            List<IBDAIControl>.Enumerator ps = friendlies.GetEnumerator();
             while (ps.MoveNext())
             {
                 if (ps.Current == null) continue;
@@ -123,16 +123,16 @@ namespace BDArmory.Control
         void RefreshFriendlies()
         {
             if (!weaponManager) return;
-            friendlies = new List<BDModulePilotAI>();
+            friendlies = new List<IBDAIControl>();
             List<Vessel>.Enumerator vs = BDATargetManager.LoadedVessels.GetEnumerator();
             while (vs.MoveNext())
             {
                 if (vs.Current == null) continue;
                 if (!vs.Current.loaded || vs.Current == vessel) continue;
 
-                BDModulePilotAI pilot = null;
+				IBDAIControl pilot = null;
                 MissileFire wm = null;
-                List<BDModulePilotAI>.Enumerator ps = vs.Current.FindPartModulesImplementing<BDModulePilotAI>().GetEnumerator();
+                List<IBDAIControl>.Enumerator ps = vs.Current.FindPartModulesImplementing<IBDAIControl>().GetEnumerator();
                 while (ps.MoveNext())
                 {
                     if (ps.Current == null) continue;
@@ -141,7 +141,7 @@ namespace BDArmory.Control
                 }
                 ps.Dispose();
 
-                if (!pilot) continue;
+                if (pilot == null) continue;
                 List<MissileFire>.Enumerator ws = vs.Current.FindPartModulesImplementing<MissileFire>().GetEnumerator();
                 while (ws.MoveNext())
                 {
@@ -156,8 +156,8 @@ namespace BDArmory.Control
             vs.Dispose();
 
             //TEMPORARY
-            wingmen = new List<BDModulePilotAI>();
-            List<BDModulePilotAI>.Enumerator fs = friendlies.GetEnumerator();
+            wingmen = new List<IBDAIControl>();
+            List<IBDAIControl>.Enumerator fs = friendlies.GetEnumerator();
             while (fs.MoveNext())
             {
                 if (fs.Current == null) continue;
@@ -170,7 +170,7 @@ namespace BDArmory.Control
         {
             if (wingmen == null)
             {
-                wingmen = new List<BDModulePilotAI>();
+                wingmen = new List<IBDAIControl>();
                 //focusIndex = 0;
                 focusIndexes.Clear();
                 return;
@@ -199,7 +199,7 @@ namespace BDArmory.Control
             }
 
             savedWingmen = string.Empty;
-            List<BDModulePilotAI>.Enumerator pilots = wingmen.GetEnumerator();
+            List<IBDAIControl>.Enumerator pilots = wingmen.GetEnumerator();
             while (pilots.MoveNext())
             {
                 if (pilots.Current == null) continue;
@@ -210,7 +210,7 @@ namespace BDArmory.Control
 
         void LoadWingmen()
         {
-            wingmen = new List<BDModulePilotAI>();
+            wingmen = new List<IBDAIControl>();
 
             if (savedWingmen == string.Empty) return;
             IEnumerator<string> wingIDs = savedWingmen.Split(new char[] {','}).AsEnumerable().GetEnumerator();
@@ -223,7 +223,7 @@ namespace BDArmory.Control
                     if (!vs.Current.loaded) continue;
 
                     if (vs.Current.id.ToString() != wingIDs.Current) continue;
-                    List<BDModulePilotAI>.Enumerator pilots = vs.Current.FindPartModulesImplementing<BDModulePilotAI>().GetEnumerator();
+                    List<IBDAIControl>.Enumerator pilots = vs.Current.FindPartModulesImplementing<IBDAIControl>().GetEnumerator();
                     while (pilots.MoveNext())
                     {
                         if (pilots.Current == null) continue;
@@ -239,12 +239,13 @@ namespace BDArmory.Control
 
 
         public bool showGUI;
-        public Rect guiWindowRect;
         bool rectInit;
         float buttonStartY = 30;
         float buttonHeight = 24;
         float buttonGap = 3;
         float margin = 6;
+        private float windowWidth = 240;
+        private float windowHeight = 100;
         float buttonWidth;
         float buttonEndY;
         GUIStyle wingmanButtonStyle;
@@ -258,21 +259,24 @@ namespace BDArmory.Control
             {
                 if (!rectInit)
                 {
-                    guiWindowRect = new Rect(45, 75, 240, 800);
-                    buttonWidth = guiWindowRect.width - (2*margin);
+                    // this Rect initialization ensures any save issues with height or width of the window are resolved
+                    BDArmorySetup.WindowRectWingCommander = new Rect(BDArmorySetup.WindowRectWingCommander.x, BDArmorySetup.WindowRectWingCommander.y, windowWidth, windowHeight);
+                    buttonWidth = BDArmorySetup.WindowRectWingCommander.width - (2*margin);
                     buttonEndY = buttonStartY;
-                    wingmanButtonStyle = new GUIStyle(HighLogic.Skin.button);
+                    wingmanButtonStyle = new GUIStyle(BDArmorySetup.BDGuiSkin.button);
                     wingmanButtonStyle.alignment = TextAnchor.MiddleLeft;
                     wingmanButtonStyle.wordWrap = false;
                     wingmanButtonStyle.fontSize = 11;
-                    wingmanButtonSelectedStyle = new GUIStyle(HighLogic.Skin.box);
+                    wingmanButtonSelectedStyle = new GUIStyle(BDArmorySetup.BDGuiSkin.box);
                     wingmanButtonSelectedStyle.alignment = TextAnchor.MiddleLeft;
                     wingmanButtonSelectedStyle.wordWrap = false;
                     wingmanButtonSelectedStyle.fontSize = 11;
                     rectInit = true;
                 }
-                guiWindowRect = GUI.Window(1293293, guiWindowRect, WingmenWindow, "WingCommander",
-                    HighLogic.Skin.window);
+                // this Rect initialization ensures any save issues with height or width of the window are resolved
+                //BDArmorySetup.WindowRectWingCommander = new Rect(BDArmorySetup.WindowRectWingCommander.x, BDArmorySetup.WindowRectWingCommander.y, windowWidth, windowHeight);
+                BDArmorySetup.WindowRectWingCommander = GUI.Window(1293293, BDArmorySetup.WindowRectWingCommander, WingmenWindow, "WingCommander",
+                    BDArmorySetup.BDGuiSkin.window);
 
                 if (showAGWindow) AGWindow();
             }
@@ -300,24 +304,24 @@ namespace BDArmory.Control
                 ScaleMode.StretchToFill, true);
         }
 
-        delegate void CommandFunction(BDModulePilotAI wingman, int index, object data);
+        delegate void CommandFunction(IBDAIControl wingman, int index, object data);
 
         void WingmenWindow(int windowID)
         {
             float height = buttonStartY;
-            GUI.DragWindow(new Rect(0, 0, guiWindowRect.width - buttonStartY - margin - margin, buttonStartY));
+            GUI.DragWindow(new Rect(0, 0, BDArmorySetup.WindowRectWingCommander.width - buttonStartY - margin - margin, buttonStartY));
 
             //close buttton
             float xSize = buttonStartY - margin - margin;
             if (GUI.Button(new Rect(buttonWidth + (2*buttonGap) - xSize, margin, xSize, xSize), "X",
-                HighLogic.Skin.button))
+                BDArmorySetup.BDGuiSkin.button))
             {
                 showGUI = false;
             }
 
             GUI.Box(
                 new Rect(margin - buttonGap, buttonStartY - buttonGap, buttonWidth + (2*buttonGap),
-                    Mathf.Max(wingmen.Count*(buttonHeight + buttonGap), 10)), GUIContent.none, HighLogic.Skin.box);
+                    Mathf.Max(wingmen.Count*(buttonHeight + buttonGap), 10)), GUIContent.none, BDArmorySetup.BDGuiSkin.box);
             buttonEndY = buttonStartY;
             for (int i = 0; i < wingmen.Count; i++)
             {
@@ -334,7 +338,7 @@ namespace BDArmory.Control
             commandSelf =
                 GUI.Toggle(
                     new Rect(margin, margin + buttonEndY + (commandButtonLine*(buttonHeight + buttonGap)), buttonWidth,
-                        buttonHeight), commandSelf, "Command Self", HighLogic.Skin.toggle);
+                        buttonHeight), commandSelf, "Command Self", BDArmorySetup.BDGuiSkin.toggle);
             commandButtonLine++;
 
             commandButtonLine += 0.10f;
@@ -350,30 +354,32 @@ namespace BDArmory.Control
             commandButtonLine += 0.5f;
             GUI.Label(
                 new Rect(margin, buttonEndY + margin + (commandButtonLine*(buttonHeight + buttonGap)), buttonWidth, 20),
-                "Formation Settings:", HighLogic.Skin.label);
+                "Formation Settings:", BDArmorySetup.BDGuiSkin.label);
             commandButtonLine++;
             GUI.Label(
                 new Rect(margin, buttonEndY + margin + (commandButtonLine*(buttonHeight + buttonGap)), buttonWidth/3, 20),
-                "Spread: " + spread.ToString("0"), HighLogic.Skin.label);
+                "Spread: " + spread.ToString("0"), BDArmorySetup.BDGuiSkin.label);
             spread =
                 GUI.HorizontalSlider(
                     new Rect(margin + (buttonWidth/3),
                         buttonEndY + margin + (commandButtonLine*(buttonHeight + buttonGap)), 2*buttonWidth/3, 20),
-                    spread, 20f, 200f, HighLogic.Skin.horizontalSlider, HighLogic.Skin.horizontalSliderThumb);
+                    spread, 20f, 200f, BDArmorySetup.BDGuiSkin.horizontalSlider, BDArmorySetup.BDGuiSkin.horizontalSliderThumb);
             commandButtonLine++;
             GUI.Label(
                 new Rect(margin, buttonEndY + margin + (commandButtonLine*(buttonHeight + buttonGap)), buttonWidth/3, 20),
-                "Lag: " + lag.ToString("0"), HighLogic.Skin.label);
+                "Lag: " + lag.ToString("0"), BDArmorySetup.BDGuiSkin.label);
             lag =
                 GUI.HorizontalSlider(
                     new Rect(margin + (buttonWidth/3),
                         buttonEndY + margin + (commandButtonLine*(buttonHeight + buttonGap)), 2*buttonWidth/3, 20), lag,
-                    0f, 100f, HighLogic.Skin.horizontalSlider, HighLogic.Skin.horizontalSliderThumb);
+                    0f, 100f, BDArmorySetup.BDGuiSkin.horizontalSlider, BDArmorySetup.BDGuiSkin.horizontalSliderThumb);
             commandButtonLine++;
 
             //resize window
             height += ((commandButtonLine - 1)*(buttonHeight + buttonGap));
-            guiWindowRect.height = height;
+            BDArmorySetup.WindowRectWingCommander.height = height;
+            GUI.DragWindow(BDArmorySetup.WindowRectWingCommander);
+            BDGUIUtils.RepositionWindow(ref BDArmorySetup.WindowRectWingCommander);
         }
 
         void WingmanButton(int index, out float buttonEndY)
@@ -408,7 +414,7 @@ namespace BDArmory.Control
         {
             float yPos = startY + margin + ((buttonHeight + buttonGap)*buttonLine);
             if (GUI.Button(new Rect(margin, yPos, buttonWidth, buttonHeight), buttonLabel,
-                pressed ? HighLogic.Skin.box : HighLogic.Skin.button))
+                pressed ? BDArmorySetup.BDGuiSkin.box : BDArmorySetup.BDGuiSkin.button))
             {
                 if (sendToWingmen)
                 {
@@ -424,7 +430,7 @@ namespace BDArmory.Control
 
                     if (commandSelf)
                     {
-                        List<BDModulePilotAI>.Enumerator ai = vessel.FindPartModulesImplementing<BDModulePilotAI>().GetEnumerator();
+                        List<IBDAIControl>.Enumerator ai = vessel.FindPartModulesImplementing<IBDAIControl>().GetEnumerator();
                         while (ai.MoveNext())
                         {
                             func(ai.Current, -1, data);
@@ -441,12 +447,12 @@ namespace BDArmory.Control
             buttonLine++;
         }
 
-        void CommandRelease(BDModulePilotAI wingman, int index, object data)
+        void CommandRelease(IBDAIControl wingman, int index, object data)
         {
             wingman.ReleaseCommand();
         }
 
-        void CommandFollow(BDModulePilotAI wingman, int index, object data)
+        void CommandFollow(IBDAIControl wingman, int index, object data)
         {
             wingman.CommandFollow(this, index);
         }
@@ -455,7 +461,7 @@ namespace BDArmory.Control
         {
             RefreshFriendlies();
             int i = 0;
-            List<BDModulePilotAI>.Enumerator wingman = friendlies.GetEnumerator();
+            List<IBDAIControl>.Enumerator wingman = friendlies.GetEnumerator();
             while(wingman.MoveNext())
             {
                 if (wingman.Current == null) continue;
@@ -465,7 +471,7 @@ namespace BDArmory.Control
             wingman.Dispose();
         }
 
-        void CommandAG(BDModulePilotAI wingman, int index, object ag)
+        void CommandAG(IBDAIControl wingman, int index, object ag)
         {
             //Debug.Log("object to string: "+ag.ToString());
             KSPActionGroup actionGroup = (KSPActionGroup) ag;
@@ -473,13 +479,12 @@ namespace BDArmory.Control
             wingman.CommandAG(actionGroup);
         }
 
-        void CommandTakeOff(BDModulePilotAI wingman, int index, object data)
+        void CommandTakeOff(IBDAIControl wingman, int index, object data)
         {
-            wingman.ActivatePilot();
-            wingman.standbyMode = false;
+			wingman.CommandTakeOff();
         }
 
-        void OpenAGWindow(BDModulePilotAI wingman, int index, object data)
+        void OpenAGWindow(IBDAIControl wingman, int index, object data)
         {
             showAGWindow = !showAGWindow;
         }
@@ -494,11 +499,11 @@ namespace BDArmory.Control
             float buttonHeight = 20;
             float agMargin = 5;
             float newHeight = 0;
-            agWindowRect = new Rect(guiWindowRect.x + guiWindowRect.width, guiWindowRect.y, width, agWindowHeight);
-            GUI.Box(agWindowRect, string.Empty, HighLogic.Skin.window);
+            agWindowRect = new Rect(BDArmorySetup.WindowRectWingCommander.x + BDArmorySetup.WindowRectWingCommander.width, BDArmorySetup.WindowRectWingCommander.y, width, agWindowHeight);
+            GUI.Box(agWindowRect, string.Empty, BDArmorySetup.BDGuiSkin.window);
             GUI.BeginGroup(agWindowRect);
             newHeight += agMargin;
-            GUIStyle titleStyle = new GUIStyle(HighLogic.Skin.label);
+            GUIStyle titleStyle = new GUIStyle(BDArmorySetup.BDGuiSkin.label);
             titleStyle.alignment = TextAnchor.MiddleCenter;
             GUI.Label(new Rect(agMargin, 5, width - (2*agMargin), 20), "Action Groups", titleStyle);
             newHeight += 20;
@@ -521,7 +526,7 @@ namespace BDArmory.Control
             agWindowHeight = newHeight;
         }
 
-        void SelectAll(BDModulePilotAI wingman, int index, object data)
+        void SelectAll(IBDAIControl wingman, int index, object data)
         {
             for (int i = 0; i < wingmen.Count; i++)
             {
@@ -532,21 +537,21 @@ namespace BDArmory.Control
             }
         }
 
-        void CommandFlyTo(BDModulePilotAI wingman, int index, object data)
+        void CommandFlyTo(IBDAIControl wingman, int index, object data)
         {
-            StartCoroutine(CommandPosition(wingman, BDModulePilotAI.PilotCommands.FlyTo));
+            StartCoroutine(CommandPosition(wingman, PilotCommands.FlyTo));
         }
 
-        void CommandAttack(BDModulePilotAI wingman, int index, object data)
+        void CommandAttack(IBDAIControl wingman, int index, object data)
         {
-            StartCoroutine(CommandPosition(wingman, BDModulePilotAI.PilotCommands.Attack));
+            StartCoroutine(CommandPosition(wingman, PilotCommands.Attack));
         }
 
 
         bool waitingForFlytoPos;
         bool waitingForAttackPos;
 
-        IEnumerator CommandPosition(BDModulePilotAI wingman, BDModulePilotAI.PilotCommands command)
+        IEnumerator CommandPosition(IBDAIControl wingman, PilotCommands command)
         {
             if (focusIndexes.Count == 0 && !commandSelf)
             {
@@ -555,11 +560,11 @@ namespace BDArmory.Control
 
             DisplayScreenMessage("Select target coordinates.\nRight-click to cancel.");
 
-            if (command == BDModulePilotAI.PilotCommands.FlyTo)
+            if (command == PilotCommands.FlyTo)
             {
                 waitingForFlytoPos = true;
             }
-            else if (command == BDModulePilotAI.PilotCommands.Attack)
+            else if (command == PilotCommands.Attack)
             {
                 waitingForAttackPos = true;
             }
@@ -587,11 +592,11 @@ namespace BDArmory.Control
                         Vector3 worldPoint = ray.GetPoint(dist);
                         Vector3d gps = VectorUtils.WorldPositionToGeoCoords(worldPoint, vessel.mainBody);
 
-                        if (command == BDModulePilotAI.PilotCommands.FlyTo)
+                        if (command == PilotCommands.FlyTo)
                         {
                             wingman.CommandFlyTo(gps);
                         }
-                        else if (command == BDModulePilotAI.PilotCommands.Attack)
+                        else if (command == PilotCommands.Attack)
                         {
                             wingman.CommandAttack(gps);
                         }
@@ -610,14 +615,14 @@ namespace BDArmory.Control
             ScreenMessages.RemoveMessage(screenMessage);
         }
 
-        IEnumerator CommandPositionGUIRoutine(BDModulePilotAI wingman, GPSTargetInfo tInfo)
+        IEnumerator CommandPositionGUIRoutine(IBDAIControl wingman, GPSTargetInfo tInfo)
         {
             //RemoveCommandPos(tInfo);
             commandedPositions.Add(tInfo);
             yield return new WaitForSeconds(0.25f);
             while (Vector3d.Distance(wingman.commandGPS, tInfo.gpsCoordinates) < 0.01f &&
-                   (wingman.currentCommand == BDModulePilotAI.PilotCommands.Attack ||
-                    wingman.currentCommand == BDModulePilotAI.PilotCommands.FlyTo))
+                   (wingman.currentCommand == PilotCommands.Attack ||
+                    wingman.currentCommand == PilotCommands.FlyTo))
             {
                 yield return null;
             }

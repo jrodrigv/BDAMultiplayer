@@ -10,6 +10,7 @@ using UnityEngine;
 using System.Text;
 using BDArmory.Core;
 using BDArmory.FX;
+using BDArmory.Guidances;
 
 namespace BDArmory.Parts
 {
@@ -108,6 +109,15 @@ namespace BDArmory.Parts
          UI_FloatRange(minValue = 0.5f, maxValue = 1.5f, stepIncrement = 0.01f, scene = UI_Scene.Editor)]
         public float BallisticOverShootFactor = 0.7f;
 
+        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "Cruise Altitude"), UI_FloatRange(minValue = 1f, maxValue = 500f, stepIncrement = 10f, scene = UI_Scene.Editor, affectSymCounterparts = UI_Scene.All)]
+        public float CruiseAltitude = 500;
+
+        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "Cruise speed"), UI_FloatRange(minValue = 100f, maxValue = 6000f, stepIncrement = 50f, scene = UI_Scene.Editor, affectSymCounterparts = UI_Scene.All)]
+        public float CruiseSpeed = 300;
+
+        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "Cruise prediction time"), UI_FloatRange(minValue = 1f, maxValue = 15f, stepIncrement = 1f, scene = UI_Scene.Editor, affectSymCounterparts = UI_Scene.All)]
+        public float CruisePredictionTime = 5;
+
         [KSPField]
         public float missileRadarCrossSection = RadarUtils.RCS_MISSILES;            // radar cross section of this missile for detection purposes
 
@@ -153,8 +163,7 @@ namespace BDArmory.Parts
 
         public bool HasExploded { get; set; } = false;
 
-        protected Vector3 previousTargetVelocity { get; set; } = Vector3.zero;
-        protected Vector3 previousMissileVelocity { get; set; } = Vector3.zero;
+        protected CruiseGuidance _cruiseGuidance;
 
         public float Throttle
         {
@@ -205,7 +214,7 @@ namespace BDArmory.Parts
         private float lastRWRPing = 0;
         private bool radarLOALSearching = false;
         protected bool checkMiss = false;
-        protected StringBuilder debugString = new StringBuilder();
+        public StringBuilder debugString = new StringBuilder();
 
         private float _throttle = 1f;
         private float _originalDistance = float.MinValue;
@@ -750,7 +759,7 @@ namespace BDArmory.Parts
             }
         }
 
-        protected void DrawDebugLine(Vector3 start, Vector3 end)
+        public void DrawDebugLine(Vector3 start, Vector3 end)
         {
             if (BDArmorySettings.DRAW_DEBUG_LINES)
             {
@@ -764,7 +773,7 @@ namespace BDArmory.Parts
                 {
                     LR = gameObject.GetComponent<LineRenderer>();
                 }
-                LR.SetVertexCount(2);
+                LR.positionCount = 2;
                 LR.SetPosition(0, start);
                 LR.SetPosition(1, end);
             }
@@ -1026,6 +1035,29 @@ namespace BDArmory.Parts
             
             Debug.Log("[BDArmory]: Missile Collided - Triggering Detonation");
             Detonate();
+        }
+
+        [KSPEvent(guiActive = false, guiActiveEditor = true, guiName = "Change to Low Altitude Range", active = true)]
+        public void CruiseAltitudeRange()
+        {
+            if (Events["CruiseAltitudeRange"].guiName == "Change to Low Altitude Range")
+            {
+                Events["CruiseAltitudeRange"].guiName = "Change to High Altitude Range";
+
+                UI_FloatRange cruiseAltitudField = (UI_FloatRange) Fields["CruiseAltitude"].uiControlEditor;
+                cruiseAltitudField.maxValue = 500f;
+                cruiseAltitudField.minValue = 1f;
+                cruiseAltitudField.stepIncrement = 5f;
+            }
+            else
+            {
+                Events["CruiseAltitudeRange"].guiName = "Change to Low Altitude Range";
+                UI_FloatRange cruiseAltitudField = (UI_FloatRange)Fields["CruiseAltitude"].uiControlEditor;
+                cruiseAltitudField.maxValue = 25000f;
+                cruiseAltitudField.minValue = 500;
+                cruiseAltitudField.stepIncrement = 500f;
+            }
+            this.part.RefreshAssociatedWindows();
         }
     }
 }
