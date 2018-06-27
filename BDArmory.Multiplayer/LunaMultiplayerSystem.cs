@@ -5,10 +5,7 @@ using BDArmory.Multiplayer.Handler;
 using BDArmory.Multiplayer.Interface;
 using BDArmory.Multiplayer.Message;
 using BDArmory.Multiplayer.Utils;
-using LunaClient;
-using LunaClient.Systems;
 using LunaClient.Systems.ModApi;
-using LunaCommon.Enums;
 using UnityEngine;
 
 namespace BDArmory.Multiplayer
@@ -18,48 +15,21 @@ namespace BDArmory.Multiplayer
     {
         private const string ModName = "BDArmory";
         public const bool Relay = true;
+        public EventData<string, byte[]> onModMessageReceivedEvent;
 
-        private void Awake()
+        void Start()
         {
           RegisterSystem();
         }
 
         public void RegisterSystem()
         {
-            try
-            {
-                Dependencies.Register<IBdaMessageHandler<DamageEventArgs>, DamageMessageHandler>();
-                Dependencies.Register<IBdaMessageHandler<ExplosionEventArgs>, ExplosionMessageHandler>();
-                Dependencies.Register<IBdaMessageHandler<ArmorEventArgs>, ArmorMessageHandler>();
-
-
-                SystemsContainer.Get<ModApiSystem>().RegisterFixedUpdateModHandler(ModName, HandlerFunction);
-                SuscribeToCoreEvents();
-                SetupBDArmoryMultiplayer();
-                Debug.Log("[BDArmory]: LMP Multiplayer found");     
-            }
-            catch (Exception ex)
-            {
-                Debug.Log("[BDArmory]: LMP Multiplayer is not installed");
-                Debug.LogError(ex);
-            }
-        }
-
-        public void Update()
-        {
-            SetupBDArmoryMultiplayer();
-        }
-
-        private void SetupBDArmoryMultiplayer()
-        {
-            if (MainSystem.NetworkState <= ClientState.Disconnected)
-            {
-                BDArmorySettings.MULTIPLAYER_ACTIVE = false;
-            }
-            else
-            {
-                BDArmorySettings.MULTIPLAYER_ACTIVE = true;
-            }
+            Dependencies.Register<IBdaMessageHandler<DamageEventArgs>, DamageMessageHandler>();
+            Dependencies.Register<IBdaMessageHandler<ExplosionEventArgs>, ExplosionMessageHandler>();
+            Dependencies.Register<IBdaMessageHandler<ArmorEventArgs>, ArmorMessageHandler>();
+           
+            SuscribeToCoreEvents();
+            
         }
 
         public void HandlerFunction(byte[] messageData)
@@ -75,6 +45,7 @@ namespace BDArmory.Multiplayer
             switch (messageReceived.Content)
             {
                 case DamageEventArgs _:
+                    Debug.Log("[BDArmory]: DamageEventArgs");
                     Dependencies.Get<IBdaMessageHandler<DamageEventArgs>>().ProcessMessage((DamageEventArgs) messageReceived.Content);
                     break;
                 case ExplosionEventArgs _:
@@ -88,9 +59,32 @@ namespace BDArmory.Multiplayer
 
         private void SuscribeToCoreEvents()
         {
-            Dependencies.Get<DamageEventService>().OnActionExecuted += OnActionExecuted;
-            Dependencies.Get<ExplosionEventService>().OnActionExecuted += OnActionExecuted;
-            Dependencies.Get<ArmorEventService>().OnActionExecuted += OnActionExecuted;
+            onModMessageReceivedEvent = GameEvents.FindEvent<EventData<string, byte[]>>("onModMessageReceived");
+            if (onModMessageReceivedEvent != null)
+            {
+                BDArmorySettings.MULTIPLAYER_ACTIVE = true;
+                Debug.Log("[BDArmory]: LMP Multiplayer enabled");
+                onModMessageReceivedEvent.Add(OnModMessageReceived);
+
+                Dependencies.Get<DamageEventService>().OnActionExecuted += OnActionExecuted;
+                Dependencies.Get<ExplosionEventService>().OnActionExecuted += OnActionExecuted;
+                Dependencies.Get<ArmorEventService>().OnActionExecuted += OnActionExecuted;
+            }
+            else
+            {
+                Debug.Log("[BDArmory]: LMP Multiplayer disabled");
+                BDArmorySettings.MULTIPLAYER_ACTIVE = false;
+            }
+
+          
+        }
+
+        private void OnModMessageReceived(string id, byte[] data)
+        {
+            if (id == ModName && data.Length > 0)
+            {
+                HandlerFunction(data);
+            }
         }
 
         private void OnActionExecuted(object sender, EventArgs eventArgs)
@@ -103,12 +97,17 @@ namespace BDArmory.Multiplayer
         {
             BdaMessage messageToSend = new BdaMessage() {Type = message.GetType(), Content = message};
 
-            SystemsContainer.Get<ModApiSystem>().SendModMessage(ModName, BinaryUtils.Serialize(messageToSend), true);
+            byte[] messageToBeSend = BinaryUtils.Serialize(messageToSend);
+
+            ModApiSystem.Singleton.SendModMessage(ModName, messageToBeSend, messageToBeSend.Length, true);
         }
 
         void OnDestroy()
         {
-            
+            if (onModMessageReceivedEvent != null)
+            {
+                onModMessageReceivedEvent.Remove(OnModMessageReceived);
+            }
         }
     }
 }

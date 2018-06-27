@@ -223,8 +223,17 @@ namespace BDArmory
                 GUIStyle guardStyle = wma.Current.guardMode ? BDArmorySetup.BDGuiSkin.box : BDArmorySetup.BDGuiSkin.button;
                 Rect guardButtonRect = new Rect(_margin + vesselButtonWidth, lineY, _buttonHeight, _buttonHeight);
 
-                ToggleGuardMode(guardButtonRect, guardStyle, wma);
-                  
+                if (GUI.Button(guardButtonRect, "G", guardStyle))
+                {
+                    if (!BDArmorySettings.MULTIPLAYER_ACTIVE)
+                    {
+                        wma.Current.ToggleGuardMode();
+                    }
+                    else if (wma.Current.vessel.isActiveVessel)
+                    {
+                        wma.Current.ToggleGuardMode();
+                    }
+                }
 
                 //AI toggle
                 if (wma.Current.AI != null)
@@ -233,7 +242,16 @@ namespace BDArmory
                     Rect aiButtonRect = new Rect(_margin + vesselButtonWidth + _buttonHeight, lineY, _buttonHeight,
                         _buttonHeight);
                     if (GUI.Button(aiButtonRect, "P", aiStyle))
-                        wma.Current.AI.TogglePilot();
+                    {
+                        if (!BDArmorySettings.MULTIPLAYER_ACTIVE)
+                        {
+                            wma.Current.AI.TogglePilot();
+                        }
+                        else if (wma.Current.vessel.isActiveVessel)
+                        {
+                            wma.Current.AI.TogglePilot();
+                        }
+                    }
                 }
 
                 //team toggle
@@ -241,8 +259,16 @@ namespace BDArmory
                     _buttonHeight, _buttonHeight);
                 if (GUI.Button(teamButtonRect, "T", BDArmorySetup.BDGuiSkin.button))
                 {
-                    _wmToSwitchTeam = wma.Current;
-                    _teamSwitchDirty = true;
+                    if (!BDArmorySettings.MULTIPLAYER_ACTIVE)
+                    {
+                        _wmToSwitchTeam = wma.Current;
+                        _teamSwitchDirty = true;
+                    }
+                    else if (wma.Current.vessel.isActiveVessel)
+                    {
+                        _wmToSwitchTeam = wma.Current;
+                        _teamSwitchDirty = true;
+                    }
                 }
                 vesselLineA++;
             }
@@ -274,7 +300,17 @@ namespace BDArmory
                 //guard toggle
                 GUIStyle guardStyle = wmb.Current.guardMode ? BDArmorySetup.BDGuiSkin.box : BDArmorySetup.BDGuiSkin.button;
                 Rect guardButtonRect = new Rect(_margin + vesselButtonWidth, lineY, _buttonHeight, _buttonHeight);
-                ToggleGuardMode(guardButtonRect, guardStyle, wmb);
+                if (GUI.Button(guardButtonRect, "G", guardStyle))
+                {
+                    if (!BDArmorySettings.MULTIPLAYER_ACTIVE)
+                    {
+                        wmb.Current.ToggleGuardMode();
+                    }
+                    else if (wmb.Current.vessel.isActiveVessel)
+                    {
+                        wmb.Current.ToggleGuardMode();
+                    }
+                }
 
                 //AI toggle
                 if (wmb.Current.AI != null)
@@ -283,7 +319,17 @@ namespace BDArmory
                     Rect aiButtonRect = new Rect(_margin + vesselButtonWidth + _buttonHeight, lineY, _buttonHeight,
                         _buttonHeight);
                     if (GUI.Button(aiButtonRect, "P", aiStyle))
-                        wmb.Current.AI.TogglePilot();
+                    {
+                        if (!BDArmorySettings.MULTIPLAYER_ACTIVE)
+                        {
+                            wmb.Current.AI.TogglePilot();
+                        }
+                        else if (wmb.Current.vessel.isActiveVessel)
+                        {
+                            wmb.Current.AI.TogglePilot();
+                        }
+                    }
+                      
                 }
 
                 //team toggle
@@ -293,11 +339,13 @@ namespace BDArmory
                 {
                     if (!BDArmorySettings.MULTIPLAYER_ACTIVE)
                     {
-                        wma.Current.ToggleGuardMode();
+                        _wmToSwitchTeam = wmb.Current;
+                        _teamSwitchDirty = true;
                     }
-                    else if (wma.Current.vessel.isActiveVessel)
+                    else if (wmb.Current.vessel.isActiveVessel)
                     {
-                        wma.Current.ToggleGuardMode();
+                        _wmToSwitchTeam = wmb.Current;
+                        _teamSwitchDirty = true;
                     }
                 }
                 vesselLineB++;
