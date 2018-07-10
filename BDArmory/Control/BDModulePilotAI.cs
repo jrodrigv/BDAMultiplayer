@@ -203,7 +203,12 @@ namespace BDArmory.Control
 
 		void Update()
 		{
-			if(BDArmorySettings.DRAW_DEBUG_LINES && pilotEnabled)
+		    if (BDArmorySettings.MULTIPLAYER_ACTIVE && !BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(vessel.id))
+		    {
+		        return;
+		    }
+
+            if (BDArmorySettings.DRAW_DEBUG_LINES && pilotEnabled)
 			{
 				if(lr)
 				{
@@ -234,8 +239,12 @@ namespace BDArmory.Control
 
 		void FixedUpdate()
 		{
-			//floating origin and velocity offloading corrections
-			if (lastTargetPosition != null && (!FloatingOrigin.Offset.IsZero() || !Krakensbane.GetFrameVelocity().IsZero()))
+		    if (BDArmorySettings.MULTIPLAYER_ACTIVE && !BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(vessel.id))
+		    {
+		        return;
+		    }
+            //floating origin and velocity offloading corrections
+            if (lastTargetPosition != null && (!FloatingOrigin.Offset.IsZero() || !Krakensbane.GetFrameVelocity().IsZero()))
 			{
 				lastTargetPosition -= FloatingOrigin.OffsetNonKrakensbane;
 			}

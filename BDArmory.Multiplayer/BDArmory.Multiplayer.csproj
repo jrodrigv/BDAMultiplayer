@@ -37,6 +37,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\BDArmory\LocalDev\Refs\LunaClient.dll</HintPath>
     </Reference>
+    <Reference Include="LunaCommon, Version=0.10.46.601, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\BDArmory\LocalDev\Refs\LunaCommon.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\BDArmory\LocalDev\Refs\UnityEngine.dll</HintPath>
     </Reference>

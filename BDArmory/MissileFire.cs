@@ -796,6 +796,11 @@ namespace BDArmory
                 return;
             }
 
+            if (BDArmorySettings.MULTIPLAYER_ACTIVE && !BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(vessel.id) )
+            {
+                return;
+            }
+
             base.OnUpdate();
             if (!vessel.packed)
             {
@@ -911,6 +916,11 @@ namespace BDArmory
 
         public override void OnFixedUpdate()
         {
+            if (BDArmorySettings.MULTIPLAYER_ACTIVE && !BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(FlightGlobals.ActiveVessel.id))
+            {
+                return;
+            }
+
             if (guardMode && vessel.IsControllable)
             {
                 GuardMode();

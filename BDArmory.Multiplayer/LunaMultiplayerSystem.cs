@@ -5,7 +5,12 @@ using BDArmory.Multiplayer.Handler;
 using BDArmory.Multiplayer.Interface;
 using BDArmory.Multiplayer.Message;
 using BDArmory.Multiplayer.Utils;
+using LunaClient;
+using LunaClient.Systems.Lock;
 using LunaClient.Systems.ModApi;
+using LunaClient.Systems.PlayerConnection;
+using LunaCommon;
+using LunaCommon.Enums;
 using UnityEngine;
 
 namespace BDArmory.Multiplayer
@@ -20,6 +25,43 @@ namespace BDArmory.Multiplayer
         void Start()
         {
           RegisterSystem();
+        }
+
+        public void Update()
+        {
+            SetupBDArmoryMultiplayer();
+        }
+
+        private void SetupBDArmoryMultiplayer()
+        {
+            if (MainSystem.NetworkState <= ClientState.Disconnected)
+            {
+                BDArmorySettings.MULTIPLAYER_ACTIVE = false;
+            }
+            else
+            {
+                BDArmorySettings.MULTIPLAYER_ACTIVE = true;
+
+                if(FlightGlobals.ActiveVessel == null) return;
+                
+                if ( String.IsNullOrEmpty(BDArmorySettings.MULTIPLAYER_OWNER_ID))
+                {
+                    BDArmorySettings.MULTIPLAYER_OWNER_ID =
+                        LockSystem.LockQuery.GetControlLockOwner(FlightGlobals.ActiveVessel.id);
+                }
+                else
+                {
+                    var locks = LockSystem.LockQuery.GetAllLocks();
+
+                    foreach (var locklmp in locks)
+                    {
+                        if (LockSystem.LockQuery.GetControlLockOwner(locklmp.VesselId) == BDArmorySettings.MULTIPLAYER_OWNER_ID && !BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(locklmp.VesselId))
+                        {
+                            BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Add(locklmp.VesselId);
+                        }
+                    }
+                }
+            }
         }
 
         public void RegisterSystem()

@@ -80,7 +80,11 @@ namespace BDArmory.Control
 			if (!weaponManager || !vessel || !vessel.transform || vessel.packed || !vessel.mainBody)
 				return;
 
-			debugString.Length = 0;
+		    if (BDArmorySettings.MULTIPLAYER_ACTIVE && !BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(vessel.id))
+		    {
+		        return;
+		    }
+            debugString.Length = 0;
 
 			// generally other AI and guard mode expects this target to be engaged
 			GetGuardTarget(); // get the guard target from weapon manager

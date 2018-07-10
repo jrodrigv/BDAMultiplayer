@@ -1,4 +1,7 @@
 ﻿
+using System;
+using System.Collections.Generic;
+
 namespace BDArmory.Core
 {
     public class BDArmorySettings
@@ -59,5 +62,8 @@ namespace BDArmory.Core
         //Only runtime settings
 
         public static bool MULTIPLAYER_ACTIVE = false;
+        public static string MULTIPLAYER_OWNER_ID = String.Empty;
+
+        public static List<Guid> MULTIPLAYER_VESSELS_OWNED = new List<Guid>();
     }
 }
