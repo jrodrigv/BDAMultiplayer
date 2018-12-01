@@ -20,8 +20,8 @@ namespace BDArmory.FX
         public GameObject bulletHoleDecalPrefab;
         public static ObjectPool decalPool_small;
         public static ObjectPool decalPool_large;
-        public static int maxPoolSize = 200;
-        public static Dictionary<Vessel,List<float>> PartsOnFire = new Dictionary<Vessel, List<float>>(); 
+        public static Dictionary<Vessel,List<float>> PartsOnFire = new Dictionary<Vessel, List<float>>();
+        public static Queue<BulletHitFX> HitsLoaded = new Queue<BulletHitFX>();
 
         public static int MaxFiresPerVessel = 3;
         public static float FireLifeTimeInSeconds = 5f;
@@ -36,14 +36,14 @@ namespace BDArmory.FX
                     Instantiate(GameDatabase.Instance.GetModel("BDArmory/Models/bulletDecal/BulletDecal2"));
             templateShell_large.SetActive(false);
             if (decalPool_large == null)
-                decalPool_large = ObjectPool.CreateObjectPool(templateShell_large, maxPoolSize, true, true);
+                decalPool_large = ObjectPool.CreateObjectPool(templateShell_large, BDArmorySettings.MAX_NUM_BULLET_DECALS, true, true);
 
             GameObject templateShell_small;
             templateShell_small =
                 Instantiate(GameDatabase.Instance.GetModel("BDArmory/Models/bulletDecal/BulletDecal1"));
             templateShell_small.SetActive(false);
             if (decalPool_small == null)
-                decalPool_small = ObjectPool.CreateObjectPool(templateShell_small, maxPoolSize, true, true);
+                decalPool_small = ObjectPool.CreateObjectPool(templateShell_small, BDArmorySettings.MAX_NUM_BULLET_DECALS, true, true);
             
         }
 
@@ -92,7 +92,7 @@ namespace BDArmory.FX
         
         private static bool CanFlamesBeAttached(Part hitPart)
         {
-            if (!hitPart.vessel.LandedOrSplashed || !hitPart.HasFuel()) //removing FX from flight for now due to performance issues
+            if (!BDArmorySettings.FIRE_FX_IN_FLIGHT && !hitPart.vessel.LandedOrSplashed || !hitPart.HasFuel()) 
                 return false;            
 
             if (hitPart.vessel.LandedOrSplashed)
@@ -125,6 +125,7 @@ namespace BDArmory.FX
 
         void Start()
         {
+            HitsLoaded.Enqueue(this);
             if (decalPool_large == null || decalPool_small == null)
                 SetupShellPool();
 
@@ -193,8 +194,9 @@ namespace BDArmory.FX
                     pe.Dispose();
                     disabled = true;
                 }
-                if (Time.time - startTime > 2f)
+                if (Time.time - startTime > 0.3f)
                 {
+                    HitsLoaded.Dequeue();
                     Destroy(gameObject);
                 }
             }
@@ -203,7 +205,9 @@ namespace BDArmory.FX
         public static void CreateBulletHit(Part hitPart,Vector3 position, RaycastHit hit, Vector3 normalDirection,
                                             bool ricochet,float caliber,float penetrationfactor)
         {
-            
+            if (HitsLoaded.Count > 5) return;
+
+
             if (decalPool_large == null || decalPool_small == null)
                 SetupShellPool();
 

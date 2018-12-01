@@ -10,6 +10,8 @@ using UnityEngine;
 using System.Text;
 using System;
 using BDArmory.Core;
+using BDArmory.Modules;
+using BDArmory.Targeting;
 
 namespace BDArmory.UI
 {
@@ -344,7 +346,13 @@ namespace BDArmory.UI
 					}
 				}
 
-
+			    if (mf != null && tInfo != null)
+			    {
+			        if (BoolToTeam(mf.team) == tInfo.team)
+			        {
+			            continue;
+			        }
+			    }
                 float angle = Vector3.Angle(vessel.CoM-ray.origin, ray.direction);
 				if(angle < scanRadius)
 				{

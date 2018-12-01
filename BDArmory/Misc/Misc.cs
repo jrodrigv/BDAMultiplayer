@@ -1,8 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using BDArmory.Parts;
-using BDArmory.Radar;
+using BDArmory.Modules;
 using BDArmory.UI;
 using UniLinq;
 using UnityEngine;
