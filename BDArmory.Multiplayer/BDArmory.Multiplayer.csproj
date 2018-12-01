@@ -30,23 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\BDArmory\LocalDev\Refs\Assembly-CSharp.dll</HintPath>
-    </Reference>
-    <Reference Include="LunaClient, Version=0.10.46.601, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\BDArmory\LocalDev\Refs\LunaClient.dll</HintPath>
-    </Reference>
-    <Reference Include="LunaCommon, Version=0.10.46.601, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\BDArmory\LocalDev\Refs\LunaCommon.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>..\BDArmory\LocalDev\Refs\UnityEngine.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="Handler\ArmorMessageHandler.cs" />
     <Compile Include="Handler\DamageMessageHandler.cs" />
     <Compile Include="Enum\MessageType.cs" />
@@ -72,6 +55,33 @@
       <Name>BDArmory</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\_LocalDev\KSPRefs\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\_LocalDev\KSPRefs\Assembly-CSharp-firstpass.dll</HintPath>
+    </Reference>
+    <Reference Include="KSPAssets, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\_LocalDev\KSPRefs\KSPAssets.dll</HintPath>
+    </Reference>
+    <Reference Include="LmpClient">
+      <HintPath>..\..\_LocalDev\KSPRefs\LmpClient.dll</HintPath>
+    </Reference>
+    <Reference Include="LmpCommon">
+      <HintPath>..\..\_LocalDev\KSPRefs\LmpCommon.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\_LocalDev\KSPRefs\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\_LocalDev\KSPRefs\UnityEngine.UI.dll</HintPath>
+    </Reference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

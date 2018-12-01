@@ -251,7 +251,6 @@ namespace BDArmory.FX
                         "[BDArmory]:Explosion Finished");
                 }
 
-                ExplosionsLoaded.Dequeue();
                 Destroy(gameObject);
                 return;
             }

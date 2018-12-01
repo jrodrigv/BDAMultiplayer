@@ -5,12 +5,10 @@ using BDArmory.Multiplayer.Handler;
 using BDArmory.Multiplayer.Interface;
 using BDArmory.Multiplayer.Message;
 using BDArmory.Multiplayer.Utils;
-using LunaClient;
-using LunaClient.Systems.Lock;
-using LunaClient.Systems.ModApi;
-using LunaClient.Systems.PlayerConnection;
-using LunaCommon;
-using LunaCommon.Enums;
+using LmpClient;
+using LmpClient.Systems.Lock;
+using LmpClient.Systems.ModApi;
+using LmpCommon.Enums;
 using UnityEngine;
 
 namespace BDArmory.Multiplayer
