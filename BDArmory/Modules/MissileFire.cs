@@ -6,6 +6,7 @@ using BDArmory.Control;
 using BDArmory.Core;
 using BDArmory.Core.Extension;
 using BDArmory.CounterMeasure;
+using BDArmory.Events;
 using BDArmory.Guidances;
 using BDArmory.Misc;
 using BDArmory.Parts;
@@ -507,12 +508,17 @@ namespace BDArmory.Modules
         public static event ToggleTeamDelegate OnToggleTeam;
 
         [KSPEvent(active = true, guiActiveEditor = true, guiActive = false)]
-        public void ToggleTeam()
+        public void ToggleTeam(bool publish = true)
         {
             team = !team;
 
+
             if (HighLogic.LoadedSceneIsFlight)
             {
+                if (publish)
+                {
+                    Dependencies.Get<VesselTeamChangeService>().PublishVesselTeamEvent(this.vessel.id, BDATargetManager.BoolToTeam(team).ToString());
+                }
                 audioSource.PlayOneShot(clickSound);
                 List<MissileFire>.Enumerator wpnMgr = vessel.FindPartModulesImplementing<MissileFire>().GetEnumerator();
                 while (wpnMgr.MoveNext())
@@ -530,7 +536,6 @@ namespace BDArmory.Modules
             }
             UpdateTeamString();
             ResetGuardInterval();
-
         }
 
         [KSPField(isPersistant = true)]

@@ -34,6 +34,7 @@
     <Compile Include="Handler\DamageMessageHandler.cs" />
     <Compile Include="Enum\MessageType.cs" />
     <Compile Include="Handler\ExplosionMessageHandler.cs" />
+    <Compile Include="Handler\VesselTeamChangeMessageHandler.cs" />
     <Compile Include="Interface\IBdaMessageHandler.cs" />
     <Compile Include="Interface\IMultiplayerSystem.cs" />
     <Compile Include="LunaMultiplayerSystem.cs" />

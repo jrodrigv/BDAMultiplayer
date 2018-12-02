@@ -67,7 +67,8 @@ namespace BDArmory.Multiplayer
             Dependencies.Register<IBdaMessageHandler<DamageEventArgs>, DamageMessageHandler>();
             Dependencies.Register<IBdaMessageHandler<ExplosionEventArgs>, ExplosionMessageHandler>();
             Dependencies.Register<IBdaMessageHandler<ArmorEventArgs>, ArmorMessageHandler>();
-           
+            Dependencies.Register<IBdaMessageHandler<VesselTeamChangeEventArgs>, VesselTeamChangeMessageHandler>();
+
             SuscribeToCoreEvents();
             
         }
@@ -91,9 +92,13 @@ namespace BDArmory.Multiplayer
                 case ExplosionEventArgs _:
                     Dependencies.Get<IBdaMessageHandler<ExplosionEventArgs>>().ProcessMessage((ExplosionEventArgs)messageReceived.Content);
                     break;
+                case VesselTeamChangeEventArgs _:
+                    Dependencies.Get<IBdaMessageHandler<VesselTeamChangeEventArgs>>().ProcessMessage((VesselTeamChangeEventArgs)messageReceived.Content);
+                    break;
                 case ArmorEventArgs _:
                     Dependencies.Get<IBdaMessageHandler<ArmorEventArgs>>().ProcessMessage((ArmorEventArgs)messageReceived.Content);
                     break;
+               
             }
         }
 
@@ -109,6 +114,7 @@ namespace BDArmory.Multiplayer
                 Dependencies.Get<DamageEventService>().OnActionExecuted += OnActionExecuted;
                 Dependencies.Get<ExplosionEventService>().OnActionExecuted += OnActionExecuted;
                 Dependencies.Get<ArmorEventService>().OnActionExecuted += OnActionExecuted;
+                Dependencies.Get<VesselTeamChangeService>().OnActionExecuted += OnActionExecuted;
             }
             else
             {
