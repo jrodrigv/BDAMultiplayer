@@ -1,5 +1,11 @@
-BDArmory
-========
+BDAMultiplayer Readme
+================
+
+This is a branch of BDArmory with multiplayer support based on LMP.
+
+
+BDArmory Readme
+================
 
 Gun turrets and other weapon systems for KSP
 
