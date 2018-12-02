@@ -203,9 +203,7 @@ SET ModName=BDArmory
 
 rem this step strips the solutionName from the git path to give us the root folder for locating the LocalDev Folder
 rem the echo commands are commented.  used for testing of the desired path.
-set GIT_PATH=$(SolutionDir)
-rem @echo %25GIT_PATH%25
-set GIT_PATH=%25GIT_PATH:BDArmory\=%25
+set GIT_PATH=$(SolutionDir)\..\
 rem @echo %25GIT_PATH%25
 
 @echo ...
