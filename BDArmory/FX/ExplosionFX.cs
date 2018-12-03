@@ -352,16 +352,16 @@ namespace BDArmory.FX
                         NegativeForce = blastInfo.VelocityChange * 0.25f
                     });
 
-                    AddForceAtPosition(rb,
-                        (eventToExecute.HitPoint + part.rb.velocity * TimeIndex - Position).normalized *
-                        blastInfo.VelocityChange *
-                        BDArmorySettings.EXP_IMP_MOD,
-                        eventToExecute.HitPoint + part.rb.velocity * TimeIndex);
 
                     if (!OnlyVisual)
                     {
+
+                        part.AddForceToPart((eventToExecute.HitPoint + part.rb.velocity * TimeIndex - Position).normalized *
+                                            blastInfo.VelocityChange *
+                                            BDArmorySettings.EXP_IMP_MOD, eventToExecute.HitPoint + part.rb.velocity * TimeIndex, ForceMode.VelocityChange);
+                       
                         part.AddExplosiveDamage(blastInfo.Damage,
-                                                           Caliber, IsMissile); 
+                                                           Caliber, IsMissile);
                     }
                 }
                 else
@@ -377,7 +377,8 @@ namespace BDArmory.FX
                             " TimePlanned: {" + eventToExecute.TimeToImpact + "}," +
                             " NegativePressure: {" + eventToExecute.IsNegativePressure + "}");
                     }
-                    AddForceAtPosition(rb, (Position - part.transform.position).normalized * eventToExecute.NegativeForce * BDArmorySettings.EXP_IMP_MOD * 0.25f, part.transform.position);
+
+                    part.AddForceToPart((Position - part.transform.position).normalized * eventToExecute.NegativeForce * BDArmorySettings.EXP_IMP_MOD * 0.25f, part.transform.position, ForceMode.VelocityChange);
                 }
             }
             catch
@@ -480,20 +481,6 @@ namespace BDArmory.FX
 
             }
             pe.Dispose();
-        }
-
-
-        public static void AddForceAtPosition(Rigidbody rb,Vector3 force,Vector3 position)
-        {
-            //////////////////////////////////////////////////////////
-            // Add The force to part
-            //////////////////////////////////////////////////////////
-            if (rb == null) return;
-            rb.AddForceAtPosition(force , position, ForceMode.VelocityChange);
-            if (BDArmorySettings.DRAW_DEBUG_LABELS)
-            {
-                 Debug.Log("[BDArmory]: Force Applied | Explosive : " + Math.Round(force.magnitude, 2));
-            }   
         }
     }
 

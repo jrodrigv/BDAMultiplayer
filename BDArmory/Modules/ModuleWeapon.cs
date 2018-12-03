@@ -965,7 +965,7 @@ namespace BDArmory.Modules
                         //recoil
                         if (hasRecoil)
                         {
-                            part.rb.AddForceAtPosition((-fireTransform.forward) * (bulletVelocity * bulletMass/1000 * BDArmorySettings.RECOIL_FACTOR * recoilReduction),
+                            part.AddForceToPart((-fireTransform.forward) * (bulletVelocity * bulletMass / 1000 * BDArmorySettings.RECOIL_FACTOR * recoilReduction),
                                 fireTransform.position, ForceMode.Impulse);
                         }
 

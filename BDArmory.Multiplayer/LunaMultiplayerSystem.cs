@@ -23,6 +23,7 @@ namespace BDArmory.Multiplayer
         void Start()
         {
           RegisterSystem();
+          SuscribeToCoreEvents();
         }
 
         public void Update()
@@ -68,14 +69,11 @@ namespace BDArmory.Multiplayer
             Dependencies.Register<IBdaMessageHandler<ExplosionEventArgs>, ExplosionMessageHandler>();
             Dependencies.Register<IBdaMessageHandler<ArmorEventArgs>, ArmorMessageHandler>();
             Dependencies.Register<IBdaMessageHandler<VesselTeamChangeEventArgs>, VesselTeamChangeMessageHandler>();
-
-            SuscribeToCoreEvents();
-            
+            Dependencies.Register<IBdaMessageHandler<ForceEventArgs>, ForceMessageHandler>();   
         }
 
         public void HandlerFunction(byte[] messageData)
         {
-
             BdaMessage messageReceived = BinaryUtils.Deserialize<BdaMessage>(messageData);
 
             ProcessReceivedMessage(messageReceived);
@@ -86,11 +84,13 @@ namespace BDArmory.Multiplayer
             switch (messageReceived.Content)
             {
                 case DamageEventArgs _:
-                    Debug.Log("[BDArmory]: DamageEventArgs");
                     Dependencies.Get<IBdaMessageHandler<DamageEventArgs>>().ProcessMessage((DamageEventArgs) messageReceived.Content);
                     break;
                 case ExplosionEventArgs _:
                     Dependencies.Get<IBdaMessageHandler<ExplosionEventArgs>>().ProcessMessage((ExplosionEventArgs)messageReceived.Content);
+                    break;
+                case ForceEventArgs _:
+                    Dependencies.Get<IBdaMessageHandler<ForceEventArgs>>().ProcessMessage((ForceEventArgs)messageReceived.Content);
                     break;
                 case VesselTeamChangeEventArgs _:
                     Dependencies.Get<IBdaMessageHandler<VesselTeamChangeEventArgs>>().ProcessMessage((VesselTeamChangeEventArgs)messageReceived.Content);
@@ -115,6 +115,7 @@ namespace BDArmory.Multiplayer
                 Dependencies.Get<ExplosionEventService>().OnActionExecuted += OnActionExecuted;
                 Dependencies.Get<ArmorEventService>().OnActionExecuted += OnActionExecuted;
                 Dependencies.Get<VesselTeamChangeService>().OnActionExecuted += OnActionExecuted;
+                Dependencies.Get<ForceEventService>().OnActionExecuted += OnActionExecuted;
             }
             else
             {

@@ -184,14 +184,17 @@ namespace BDArmory.Core.Extension
 
         }
 
-        public static void AddForceToPart(Rigidbody rb, Vector3 force, Vector3 position,ForceMode mode)
+        public static void AddForceToPart(this Part part, Vector3 force, Vector3 position,ForceMode mode, bool publish = true)
         {
-
+            if (publish)
+            {
+                Dependencies.Get<ForceEventService>().PublishForceEvent(part, force, position, mode);
+            }
             //////////////////////////////////////////////////////////
             // Add The force to part
             //////////////////////////////////////////////////////////
-
-            rb.AddForceAtPosition(force, position, mode);
+           
+            part.rb.AddForceAtPosition(force, position, mode);
             Debug.Log("[BDArmory]: Force Applied : " + Math.Round(force.magnitude,2));
         }
 
