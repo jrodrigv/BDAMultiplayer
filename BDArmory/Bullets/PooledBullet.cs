@@ -428,10 +428,11 @@ namespace BDArmory.Bullets
             //Flak Explosion (air detonation/proximity fuse)
             //////////////////////////////////////////////////
 
-            if (ProximityAirDetonation(distanceFromStart))
+            Vessel vesselHit = null;
+            if (ProximityAirDetonation(distanceFromStart, out vesselHit))
             {
                 //detonate
-                ExplosionFx.CreateExplosion(currPosition, tntMass, explModelPath, explSoundPath, false, caliber, null, currentVelocity);
+                ExplosionFx.CreateExplosion(currPosition, tntMass, explModelPath, explSoundPath, false, caliber, null, currentVelocity, vesselHit);
                 KillBullet();
 
                 return;
@@ -449,10 +450,10 @@ namespace BDArmory.Bullets
             transform.position += currentVelocity * Time.fixedDeltaTime;
         }
 
-        private bool ProximityAirDetonation(float distanceFromStart)
+        private bool ProximityAirDetonation(float distanceFromStart, out Vessel vesselHit)
         {
             bool detonate = false;
-
+            vesselHit = null;
             if (distanceFromStart <= 500f) return false;
 
             if (explosive && airDetonation)
@@ -478,6 +479,12 @@ namespace BDArmory.Bullets
                                 if (BDArmorySettings.DRAW_DEBUG_LABELS)
                                     Debug.Log("[BDArmory]: Bullet proximity sphere hit | Distance overlap = " + detonationRange + "| Part name = " + partHit.name);
 
+
+                                if (partHit?.vessel != null)
+                                {
+                                    vesselHit = partHit?.vessel;
+                                }
+                                
                                 return detonate = true;
                             }
                             catch
@@ -635,13 +642,13 @@ namespace BDArmory.Bullets
 
                     if (airDetonation)
                     {
-                        ExplosionFx.CreateExplosion(hit.point, GetExplosivePower(), explModelPath, explSoundPath, false, caliber);
+                        ExplosionFx.CreateExplosion(hit.point, GetExplosivePower(), explModelPath, explSoundPath, false, caliber, null, default(Vector3), hitPart?.vessel != null ? hitPart.vessel : null);
                     }
                     else
                     {
                         ExplosionFx.CreateExplosion(hit.point - (ray.direction * 0.1f),
                                                     GetExplosivePower(),
-                                                    explModelPath, explSoundPath, false, caliber, null, direction: currentVelocity);
+                                                    explModelPath, explSoundPath, false, caliber, null, currentVelocity, hitPart?.vessel != null ? hitPart.vessel : null);
                     }
 
                     KillBullet();

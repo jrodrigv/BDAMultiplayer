@@ -1757,13 +1757,13 @@ namespace BDArmory.Modules
 
 		    if (part.FindModuleImplementing<BDExplosivePart>() != null)
 		    {
-		        part.FindModuleImplementing<BDExplosivePart>().DetonateIfPossible();
+		        part.FindModuleImplementing<BDExplosivePart>().DetonateIfPossible(this.vesselTriggerDetonation);
 		    }
 		    else //TODO: Remove this backguard compatibility
 		    {
 		        Vector3 position = transform.position;//+rigidbody.velocity*Time.fixedDeltaTime;
 
-		        ExplosionFx.CreateExplosion(position, blastPower, explModelPath, explSoundPath, true, 0, part);
+		        ExplosionFx.CreateExplosion(position, blastPower, explModelPath, explSoundPath, true, 0, part, targetVessel: this.vesselTriggerDetonation );
             }
 		    
 

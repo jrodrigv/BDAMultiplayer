@@ -99,8 +99,13 @@ namespace BDArmory.Modules
 
 	        blastRadius = BlastPhysicsUtils.CalculateBlastRange(tntMass);
         }
-		
-		public void DetonateIfPossible()
+
+	    public void DetonateIfPossible()
+	    {
+	        DetonateIfPossible(null);
+	    }
+
+        public void DetonateIfPossible(Vessel vesselTriggerDetonation)
 		{
 			if(!hasDetonated && Armed)
 			{
@@ -111,7 +116,7 @@ namespace BDArmory.Modules
 			        direction = (part.transform.position + part.rb.velocity * Time.deltaTime).normalized;
 			    }
 			    ExplosionFx.CreateExplosion(part.transform.position, tntMass,
-			        explModelPath, explSoundPath, true, 0, part, direction);
+			        explModelPath, explSoundPath, true, 0, part, direction, vesselTriggerDetonation);
                 hasDetonated = true;
 			}
 		}

@@ -17,6 +17,12 @@ namespace BDArmory.Events
         public float DirectionX { get; set; }
         public float DirectionY { get; set; }
         public float DirectionZ { get; set; }
+
+        public float TargetVesselComX { get; set; }
+        public float TargetVesselComY { get; set; }
+        public float TargetVesselComZ { get; set; }
+
+        public Guid? TargetVesselId { get; set; }
     }
 
 }

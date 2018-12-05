@@ -211,6 +211,8 @@ namespace BDArmory.Core.Extension
 
         public static bool GetFireFX(this Part p)
         {
+            if (p == null) return false;
+
             return p.Modules.GetModule<HitpointTracker>().GetFireFX();
         }
 

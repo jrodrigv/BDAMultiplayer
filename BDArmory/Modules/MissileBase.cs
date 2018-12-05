@@ -174,6 +174,8 @@ namespace BDArmory.Modules
 
         public bool HasExploded { get; set; } = false;
 
+        public Vessel vesselTriggerDetonation { get; set; } = null;
+
         protected CruiseGuidance _cruiseGuidance;
 
         public float Throttle
@@ -231,6 +233,8 @@ namespace BDArmory.Modules
         private float _originalDistance = float.MinValue;
         private Vector3 _startPoint;
         Vector3 previousPos;
+
+
 
         public string GetSubLabel()
         {
@@ -995,6 +999,8 @@ namespace BDArmory.Modules
                                                     //We found a hit to other vessel
                                                     vessel.SetPosition(hit.point);
                                                     DetonationDistanceState = DetonationDistanceStates.Detonate;
+
+                                                    this.vesselTriggerDetonation = hitPart.vessel;
                                                     Detonate();
                                                     return;
                                                 }

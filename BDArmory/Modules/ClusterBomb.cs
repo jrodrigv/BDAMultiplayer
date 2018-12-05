@@ -234,7 +234,7 @@ namespace BDArmory.Modules
 
                     if (hitPart != null || CheckBuildingHit(hit))
                     {
-                        Detonate(hit.point);
+                        Detonate(hit.point, hitPart);
                     }
                     else if (hitPart == null)
                     {
@@ -251,9 +251,17 @@ namespace BDArmory.Modules
             }
         }
 
-        void Detonate(Vector3 pos)
+        void Detonate(Vector3 pos, Part partHit = null)
         {
-            ExplosionFx.CreateExplosion(pos, blastForce, subExplModelPath, subExplSoundPath,true);
+            if (partHit != null)
+            {
+                ExplosionFx.CreateExplosion(pos, blastForce, subExplModelPath, subExplSoundPath, true, targetVessel: partHit.vessel);
+            }
+            else
+            {
+                ExplosionFx.CreateExplosion(pos, blastForce, subExplModelPath, subExplSoundPath, true);
+            }
+            
             Destroy(gameObject); 
         }
 

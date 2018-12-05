@@ -243,7 +243,7 @@ namespace BDArmory.FX
                 pe.Dispose();
             }
 
-            if (ExplosionEvents.Count == 0 && TimeIndex > 2f*MaxTime)
+            if (ExplosionEvents.Count == 0 && TimeIndex > 3f*MaxTime)
             {
                 if (BDArmorySettings.DRAW_DEBUG_LABELS)
                 {
@@ -324,7 +324,7 @@ namespace BDArmory.FX
                 {
                     BlastInfo blastInfo =
                         BlastPhysicsUtils.CalculatePartBlastEffects(part, realDistance,
-                            part.vessel.totalMass * 1000f, Power, Range);
+                            part.vessel.GetTotalMass() * 1000f, Power, Range);
 
                     if (BDArmorySettings.DRAW_DEBUG_LABELS)
                     {
@@ -336,7 +336,7 @@ namespace BDArmory.FX
                             " Damage: {" + blastInfo.Damage + "}," +
                             " EffectiveArea: {" + blastInfo.EffectivePartArea + "}," +
                             " Positive Phase duration: {" + blastInfo.PositivePhaseDuration + "}," +
-                            " Vessel mass: {" + Math.Round(part.vessel.totalMass * 1000f) + "}," +
+                            " Vessel mass: {" + Math.Round(part.vessel.GetTotalMass() * 1000f) + "}," +
                             " TimeIndex: {" + TimeIndex + "}," +
                             " TimePlanned: {" + eventToExecute.TimeToImpact + "}," +
                             " NegativePressure: {" + eventToExecute.IsNegativePressure + "}");
@@ -352,14 +352,12 @@ namespace BDArmory.FX
                         NegativeForce = blastInfo.VelocityChange * 0.25f
                     });
 
+                    part.AddForceToPart((eventToExecute.HitPoint + part.rb.velocity * TimeIndex - Position).normalized *
+                                        blastInfo.VelocityChange *
+                                        BDArmorySettings.EXP_IMP_MOD, eventToExecute.HitPoint + part.rb.velocity * TimeIndex, ForceMode.VelocityChange, false);
 
                     if (!OnlyVisual)
-                    {
-
-                        part.AddForceToPart((eventToExecute.HitPoint + part.rb.velocity * TimeIndex - Position).normalized *
-                                            blastInfo.VelocityChange *
-                                            BDArmorySettings.EXP_IMP_MOD, eventToExecute.HitPoint + part.rb.velocity * TimeIndex, ForceMode.VelocityChange);
-                       
+                    {  
                         part.AddExplosiveDamage(blastInfo.Damage,
                                                            Caliber, IsMissile);
                     }
@@ -378,7 +376,7 @@ namespace BDArmory.FX
                             " NegativePressure: {" + eventToExecute.IsNegativePressure + "}");
                     }
 
-                    part.AddForceToPart((Position - part.transform.position).normalized * eventToExecute.NegativeForce * BDArmorySettings.EXP_IMP_MOD * 0.25f, part.transform.position, ForceMode.VelocityChange);
+                    part.AddForceToPart((Position - part.transform.position).normalized * eventToExecute.NegativeForce * BDArmorySettings.EXP_IMP_MOD * 0.25f, part.transform.position, ForceMode.VelocityChange, false);
                 }
             }
             catch
@@ -387,9 +385,9 @@ namespace BDArmory.FX
             }
         }
 
-        public static void CreateExplosion(Vector3 position, float tntMassEquivalent, string explModelPath, string soundPath, bool isMissile = true,float caliber = 0, Part explosivePart = null, Vector3 direction = default(Vector3))
+        public static void CreateExplosion(Vector3 position, float tntMassEquivalent, string explModelPath, string soundPath, bool isMissile = true,float caliber = 0, Part explosivePart = null, Vector3 direction = default(Vector3), Vessel targetVessel = null)
         {
-            Dependencies.Get<ExplosionEventService>().PublishExplosionEvent(position, tntMassEquivalent, explModelPath, soundPath, direction);
+            Dependencies.Get<ExplosionEventService>().PublishExplosionEvent(position, tntMassEquivalent, explModelPath, soundPath, direction, targetVessel);
             var go = GameDatabase.Instance.GetModel(explModelPath);
             var soundClip = GameDatabase.Instance.GetAudioClip(soundPath);
 

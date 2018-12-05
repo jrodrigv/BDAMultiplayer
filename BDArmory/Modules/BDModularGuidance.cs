@@ -97,7 +97,7 @@ namespace BDArmory.Modules
         public TransformAxisVectors ForwardTransformAxis { get; set; }
         public TransformAxisVectors UpTransformAxis { get; set; }
 
-        public float Mass => (float) vessel.totalMass;
+        public float Mass => (float) vessel.GetTotalMass();
 
         public enum TransformAxisVectors
         {
@@ -986,7 +986,14 @@ namespace BDArmory.Modules
         {
             for (int i = this.vessel.parts.Count - 1; i >= 0; i--)
             {
-                this.vessel.parts[i]?.explode();
+                try
+                {
+                    this.vessel.parts[i]?.explode();
+                }
+                catch
+                {
+                    // ignored
+                }
             }
         }
 
@@ -1003,7 +1010,7 @@ namespace BDArmory.Modules
             }
             else
             {
-                vessel.FindPartModulesImplementing<BDExplosivePart>().ForEach(explosivePart => explosivePart.DetonateIfPossible());
+                vessel.FindPartModulesImplementing<BDExplosivePart>().ForEach(explosivePart => explosivePart.DetonateIfPossible(this.vesselTriggerDetonation));
                 AutoDestruction();
             }
         }
