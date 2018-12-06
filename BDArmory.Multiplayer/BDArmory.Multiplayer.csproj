@@ -35,6 +35,7 @@
     <Compile Include="Enum\MessageType.cs" />
     <Compile Include="Handler\ExplosionMessageHandler.cs" />
     <Compile Include="Handler\ForceMessageHandler.cs" />
+    <Compile Include="Handler\TurretAimMessageHandler.cs" />
     <Compile Include="Handler\VesselTeamChangeMessageHandler.cs" />
     <Compile Include="Interface\IBdaMessageHandler.cs" />
     <Compile Include="Interface\IMultiplayerSystem.cs" />

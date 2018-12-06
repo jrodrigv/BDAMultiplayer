@@ -1,4 +1,5 @@
 using BDArmory.Core;
+using BDArmory.Events;
 using BDArmory.Misc;
 using BDArmory.UI;
 using UnityEngine;
@@ -132,7 +133,15 @@ namespace BDArmory.Modules
 
                     Vector3 tDir = yawTransform.parent.InverseTransformDirection(pitchTransform.forward);
                     float angle = Vector3.Angle(tDir, lastTurretDirection);
+
+                    if (angle / Time.fixedDeltaTime > 1f)
+                    {
+                        Dependencies.Get<TurretAimEventService>().PublishTurretAimEvent(this.part.vessel.id,this.part.flightID, this.part.craftID, tDir);
+                    }
+
                     float rate = Mathf.Clamp01((angle/Time.fixedDeltaTime)/maxAudioRotRate);
+
+                   
                     lastTurretDirection = tDir;
 
                     targetAudioRotationRate = rate;
@@ -166,7 +175,7 @@ namespace BDArmory.Modules
             AimInDirection(targetPosition - referenceTransform.position, pitch, yaw);
         }
 
-        public void AimInDirection(Vector3 targetDirection, bool pitch = true, bool yaw = true)
+        public void AimInDirection(Vector3 targetDirection, bool pitch = true, bool yaw = true, bool publish = true)
         {
             if (!yawTransform)
             {

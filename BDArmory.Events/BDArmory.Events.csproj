@@ -41,6 +41,8 @@
     <Compile Include="INotificableService.cs" />
     <Compile Include="NotificableService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TurretAimEventArgs.cs" />
+    <Compile Include="TurretAimEventService.cs" />
     <Compile Include="VesselTeamChangeEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
