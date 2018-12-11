@@ -813,7 +813,10 @@ namespace BDArmory.Modules
                     (TimeWarp.WarpMode != TimeWarp.Modes.HIGH || TimeWarp.CurrentRate == 1))
                 {
                     //Aim();
-                    StartCoroutine(AimAndFireAtEndOfFrame());
+                    if (BDArmorySettings.MULTIPLAYER_ACTIVE && BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(vessel.id))
+                    {
+                        StartCoroutine(AimAndFireAtEndOfFrame()); 
+                    }
 
 
                     if (eWeaponType == WeaponTypes.Laser)

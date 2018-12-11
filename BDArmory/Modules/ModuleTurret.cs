@@ -57,6 +57,7 @@ namespace BDArmory.Modules
         float targetAudioRotationRate;
         Vector3 lastTurretDirection;
         float maxAudioRotRate;
+        private double lastTurretUpdate = 0f;
 
 
         public override void OnStart(StartState state)
@@ -134,17 +135,24 @@ namespace BDArmory.Modules
                     Vector3 tDir = yawTransform.parent.InverseTransformDirection(pitchTransform.forward);
                     float angle = Vector3.Angle(tDir, lastTurretDirection);
 
-                    if (angle / Time.fixedDeltaTime > 1f)
-                    {
-                        Dependencies.Get<TurretAimEventService>().PublishTurretAimEvent(this.part.vessel.id,this.part.flightID, this.part.craftID, tDir);
-                    }
-
+               
                     float rate = Mathf.Clamp01((angle/Time.fixedDeltaTime)/maxAudioRotRate);
 
                    
                     lastTurretDirection = tDir;
 
                     targetAudioRotationRate = rate;
+                }
+
+                if (Time.time - this.lastTurretUpdate > 0.1f)
+                {
+                    if (Quaternion.Angle(yawTransform.localRotation, this.lastYawRotation) > 0 || Quaternion.Angle(pitchTransform.localRotation, this.lastPitchRotation) > 0)
+                    {
+                        Dependencies.Get<TurretAimEventService>().PublishTurretAimEvent(this.part.vessel.id, this.part.flightID, this.part.craftID, pitchTransform.localRotation, yawTransform.localRotation);
+                        this.lastTurretUpdate = Time.time;
+                        this.lastYawRotation = yawTransform.localRotation;
+                        this.lastPitchRotation = pitchTransform.localRotation;
+                    } 
                 }
             }
         }
@@ -234,6 +242,10 @@ namespace BDArmory.Modules
                 pitchTransform.localRotation = Quaternion.RotateTowards(pitchTransform.localRotation,
                     Quaternion.Euler(-targetPitchAngle, 0, 0), pitchSpeed);
         }
+
+        public Quaternion lastPitchRotation { get; set; }
+
+        public Quaternion lastYawRotation { get; set; }
 
         public bool ReturnTurret()
         {

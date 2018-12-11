@@ -195,7 +195,6 @@ namespace BDArmory.Core.Extension
             //////////////////////////////////////////////////////////
            
             part.rb.AddForceAtPosition(force, position, mode);
-            Debug.Log("[BDArmory]: Force Applied : " + Math.Round(force.magnitude,2));
         }
 
         public static void Destroy(this Part p)

@@ -29,7 +29,7 @@ namespace BDArmory.Multiplayer.Handler
                 }
             }
        
-            ExplosionFx.CreateVisualExplosion(new Vector3(message.PositionX + offsetCorrection.x, message.PositionY+ +offsetCorrection.y, message.PositionZ + +offsetCorrection.z),message.TntMassEquivalent, message.ExplosionModelPath, message.SoundPath, new Vector3(message.DirectionX, message.DirectionY, message.DirectionZ));
+            ExplosionFx.CreateVisualExplosion(new Vector3(message.PositionX , message.PositionY , message.PositionZ),message.TntMassEquivalent, message.ExplosionModelPath, message.SoundPath, new Vector3(message.DirectionX, message.DirectionY, message.DirectionZ));
         }
     }
 }

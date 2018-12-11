@@ -40,9 +40,11 @@
     <Compile Include="ForceEventService.cs" />
     <Compile Include="INotificableService.cs" />
     <Compile Include="NotificableService.cs" />
+    <Compile Include="PartEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TurretAimEventArgs.cs" />
     <Compile Include="TurretAimEventService.cs" />
+    <Compile Include="VesselEventArgs.cs" />
     <Compile Include="VesselTeamChangeEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>

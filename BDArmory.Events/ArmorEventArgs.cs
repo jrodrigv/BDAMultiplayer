@@ -3,11 +3,8 @@
 namespace BDArmory.Events
 {
     [Serializable]
-    public class ArmorEventArgs : EventArgs
+    public class ArmorEventArgs : PartEventArgs
     {
-        public Guid VesselId { get; set; }
-        public uint PartFlightId { get; set; }
-        public uint PartCraftId { get; set; }
         public float ArmorMassToReduce { get; set; }
     }
 }

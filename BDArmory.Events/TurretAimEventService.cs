@@ -8,16 +8,21 @@ namespace BDArmory.Events
 {
     public class TurretAimEventService : NotificableService
     {
-        public virtual void PublishTurretAimEvent(Guid vesselId, uint partFlightId, uint partCraftId, Vector3 direction)
+        public virtual void PublishTurretAimEvent(Guid vesselId, uint partFlightId, uint partCraftId, Quaternion pitchRotation, Quaternion yawRotation)
         {
             PublishEvent(new TurretAimEventArgs()
             {
                 VesselId = vesselId,
                 PartFlightId = partFlightId,
                 PartCraftId = partCraftId,
-                DirectionX = direction.x,
-                DirectionY = direction.y,
-                DirectionZ = direction.z
+                PitchRotationW = pitchRotation.w ,
+                PitchRotationX = pitchRotation.x,
+                PitchRotationY = pitchRotation.y,
+                PitchRotationZ = pitchRotation.z ,
+                YawRotationW = yawRotation.w ,
+                YawRotationX = yawRotation.x ,
+                YawRotationY = yawRotation.y,
+                YawRotationZ = yawRotation.z
             });
         }
     }

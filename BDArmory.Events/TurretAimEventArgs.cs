@@ -6,14 +6,18 @@ using System.Text;
 namespace BDArmory.Events
 {
     [Serializable]
-    public class TurretAimEventArgs : EventArgs
+    public class TurretAimEventArgs : PartEventArgs
     {
-        public Guid? VesselId { get; set; }
-        public uint PartFlightId { get; set; }
-        public uint PartCraftId { get; set; }
+        public float PitchRotationX { get; set; }
+        public float PitchRotationY { get; set; }
+        public float PitchRotationZ { get; set; }
+        public float PitchRotationW { get; set; }
 
-        public float DirectionX { get; set; }
-        public float DirectionY { get; set; }
-        public float DirectionZ { get; set; }
+        public float YawRotationX { get; set; }
+        public float YawRotationY { get; set; }
+        public float YawRotationZ { get; set; }
+        public float YawRotationW { get; set; }
+
+
     }
 }
