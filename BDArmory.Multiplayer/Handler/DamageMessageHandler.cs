@@ -3,6 +3,7 @@ using BDArmory.Core;
 using BDArmory.Core.Interface;
 using BDArmory.Events;
 using BDArmory.Multiplayer.Interface;
+using BDArmory.Multiplayer.Utils;
 
 namespace BDArmory.Multiplayer.Handler
 {
@@ -11,13 +12,8 @@ namespace BDArmory.Multiplayer.Handler
         public void ProcessMessage(DamageEventArgs message)
         {
             if(message == null) return;
-        
-            Vessel vessel = FlightGlobals.VesselsLoaded.FirstOrDefault(v => v.id == message.VesselId);
 
-            if (vessel == null || vessel.packed) return;
-
-            Part part = vessel.Parts.FirstOrDefault(p => p.flightID == message.PartFlightId) ??
-                        vessel.Parts.FirstOrDefault(p => p.craftID == message.PartCraftId);
+            Part part = PartUtils.GetPart(message.VesselId, message.PartFlightId, message.PartCraftId);
 
             if (part == null) return;
 
