@@ -37,6 +37,8 @@
     <Compile Include="DamageOperation.cs" />
     <Compile Include="ExplosionEventArgs.cs" />
     <Compile Include="ExplosionEventService.cs" />
+    <Compile Include="FireEventArgs.cs" />
+    <Compile Include="FireEventService.cs" />
     <Compile Include="ForceEventService.cs" />
     <Compile Include="INotificableService.cs" />
     <Compile Include="NotificableService.cs" />

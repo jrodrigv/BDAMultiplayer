@@ -8,7 +8,6 @@ namespace BDArmory.Multiplayer.Utils
 {
     public static class PartUtils
     {
-
         public static Part GetPart (Guid? vesselGuid, uint partFlightId, uint partCraftId)
         {
             var vessel = FlightGlobals.VesselsLoaded.FirstOrDefault(v => v.id == vesselGuid);
@@ -26,8 +25,5 @@ namespace BDArmory.Multiplayer.Utils
 
             return part == null ? null : part.FindModuleImplementing<T>();
         }
-
-
-
     }
 }

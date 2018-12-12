@@ -93,9 +93,16 @@ namespace BDArmory.Bullets
         public int penTicker = 0;
 
         public Rigidbody rb;
-        #endregion
+
+        public bool OnlyVisual { get; set; } = false;
 
         private Vector3[] linePositions = new Vector3[2];
+
+        #endregion
+
+
+
+
         void OnEnable()
         {
             startPosition = transform.position;
@@ -500,6 +507,8 @@ namespace BDArmory.Bullets
 
         private void ApplyDamage(Part hitPart, RaycastHit hit, float multiplier, float penetrationfactor)
         {
+            if (OnlyVisual) return;
+
             //hitting a vessel Part
             //No struts, they cause weird bugs :) -BahamutoD
             if (hitPart == null) return;
@@ -675,6 +684,8 @@ namespace BDArmory.Bullets
 
         private bool CheckBuildingHit(RaycastHit hit)
         {
+            if (OnlyVisual) return false;
+
             DestructibleBuilding building = null;
             try
             {

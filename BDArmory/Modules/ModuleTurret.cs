@@ -115,7 +115,8 @@ namespace BDArmory.Modules
             {
                 if (hasAudio)
                 {
-                    audioRotationRate = Mathf.Lerp(audioRotationRate, targetAudioRotationRate, 20*Time.fixedDeltaTime);
+                    audioRotationRate =
+                        Mathf.Lerp(audioRotationRate, targetAudioRotationRate, 20 * Time.fixedDeltaTime);
                     audioRotationRate = Mathf.Clamp01(audioRotationRate);
 
 
@@ -125,9 +126,9 @@ namespace BDArmory.Modules
                     }
                     else
                     {
-                        audioSource.volume = Mathf.Clamp(2f*audioRotationRate,
-                            minVolume*BDArmorySettings.BDARMORY_WEAPONS_VOLUME,
-                            maxVolume*BDArmorySettings.BDARMORY_WEAPONS_VOLUME);
+                        audioSource.volume = Mathf.Clamp(2f * audioRotationRate,
+                            minVolume * BDArmorySettings.BDARMORY_WEAPONS_VOLUME,
+                            maxVolume * BDArmorySettings.BDARMORY_WEAPONS_VOLUME);
                         audioSource.pitch = Mathf.Clamp(audioRotationRate, minAudioPitch, maxAudioPitch);
                     }
 
@@ -135,10 +136,10 @@ namespace BDArmory.Modules
                     Vector3 tDir = yawTransform.parent.InverseTransformDirection(pitchTransform.forward);
                     float angle = Vector3.Angle(tDir, lastTurretDirection);
 
-               
-                    float rate = Mathf.Clamp01((angle/Time.fixedDeltaTime)/maxAudioRotRate);
 
-                   
+                    float rate = Mathf.Clamp01((angle / Time.fixedDeltaTime) / maxAudioRotRate);
+
+
                     lastTurretDirection = tDir;
 
                     targetAudioRotationRate = rate;
@@ -146,13 +147,16 @@ namespace BDArmory.Modules
 
                 if (Time.time - this.lastTurretUpdate > 0.1f)
                 {
-                    if (Quaternion.Angle(yawTransform.localRotation, this.lastYawRotation) > 0 || Quaternion.Angle(pitchTransform.localRotation, this.lastPitchRotation) > 0)
+                    if (Quaternion.Angle(yawTransform.localRotation, this.lastYawRotation) > 0 ||
+                        Quaternion.Angle(pitchTransform.localRotation, this.lastPitchRotation) > 0)
                     {
-                        Dependencies.Get<TurretAimEventService>().PublishTurretAimEvent(this.part.vessel.id, this.part.flightID, this.part.craftID, pitchTransform.localRotation, yawTransform.localRotation);
+                        Dependencies.Get<TurretAimEventService>().PublishTurretAimEvent(this.part.vessel.id,
+                            this.part.flightID, this.part.craftID, pitchTransform.localRotation,
+                            yawTransform.localRotation);
                         this.lastTurretUpdate = Time.time;
                         this.lastYawRotation = yawTransform.localRotation;
                         this.lastPitchRotation = pitchTransform.localRotation;
-                    } 
+                    }
                 }
             }
         }
@@ -199,40 +203,48 @@ namespace BDArmory.Modules
 
             float currentYaw = yawTransform.localEulerAngles.y;
             float yawError = VectorUtils.SignedAngleDP(
-                Vector3.ProjectOnPlane(referenceTransform.forward, yawNormal), 
-                yawComponent, 
+                Vector3.ProjectOnPlane(referenceTransform.forward, yawNormal),
+                yawComponent,
                 Vector3.Cross(yawNormal, referenceTransform.forward));
             float yawOffset = Mathf.Abs(yawError);
-            float targetYawAngle = Mathf.Clamp((currentYaw + yawError + 180f) % 360f - 180f, -yawRange / 2, yawRange / 2); // clamped target yaw
+            float targetYawAngle =
+                Mathf.Clamp((currentYaw + yawError + 180f) % 360f - 180f, -yawRange / 2,
+                    yawRange / 2); // clamped target yaw
 
-            float pitchError = (float)Vector3d.Angle(pitchComponent, yawNormal) - (float)Vector3d.Angle(referenceTransform.forward, yawNormal);
-            float currentPitch = -((pitchTransform.localEulerAngles.x + 180f) % 360f - 180f); // from current rotation transform
+            float pitchError = (float) Vector3d.Angle(pitchComponent, yawNormal) -
+                               (float) Vector3d.Angle(referenceTransform.forward, yawNormal);
+            float currentPitch =
+                -((pitchTransform.localEulerAngles.x + 180f) % 360f - 180f); // from current rotation transform
             float targetPitchAngle = currentPitch - pitchError;
             float pitchOffset = Mathf.Abs(targetPitchAngle - currentPitch);
             targetPitchAngle = Mathf.Clamp(targetPitchAngle, minPitch, maxPitch); // clamp pitch
 
-            float linPitchMult = yawOffset > 0 ? Mathf.Clamp01((pitchOffset/yawOffset)*(yawSpeedDPS/pitchSpeedDPS)) : 1;
-            float linYawMult = pitchOffset > 0 ? Mathf.Clamp01((yawOffset/pitchOffset)*(pitchSpeedDPS/yawSpeedDPS)) : 1;
+            float linPitchMult =
+                yawOffset > 0 ? Mathf.Clamp01((pitchOffset / yawOffset) * (yawSpeedDPS / pitchSpeedDPS)) : 1;
+            float linYawMult = pitchOffset > 0
+                ? Mathf.Clamp01((yawOffset / pitchOffset) * (pitchSpeedDPS / yawSpeedDPS))
+                : 1;
 
             float yawSpeed;
             float pitchSpeed;
             if (smoothRotation)
             {
-                yawSpeed = Mathf.Clamp(yawOffset*smoothMultiplier, 1f, yawSpeedDPS)*deltaTime;
-                pitchSpeed = Mathf.Clamp(pitchOffset*smoothMultiplier, 1f, pitchSpeedDPS)*deltaTime;
+                yawSpeed = Mathf.Clamp(yawOffset * smoothMultiplier, 1f, yawSpeedDPS) * deltaTime;
+                pitchSpeed = Mathf.Clamp(pitchOffset * smoothMultiplier, 1f, pitchSpeedDPS) * deltaTime;
             }
             else
             {
-                yawSpeed = yawSpeedDPS*deltaTime;
-                pitchSpeed = pitchSpeedDPS*deltaTime;
+                yawSpeed = yawSpeedDPS * deltaTime;
+                pitchSpeed = pitchSpeedDPS * deltaTime;
             }
 
             yawSpeed *= linYawMult;
             pitchSpeed *= linPitchMult;
 
-            if (yawRange < 360 && Mathf.Abs(targetYawAngle) > 90 && Mathf.Sign(currentYaw) != Mathf.Sign(targetYawAngle))
+            if (yawRange < 360 && Mathf.Abs(targetYawAngle) > 90 &&
+                Mathf.Sign(currentYaw) != Mathf.Sign(targetYawAngle))
             {
-                targetYawAngle = 5*Mathf.Sign(targetYawAngle);
+                targetYawAngle = 5 * Mathf.Sign(targetYawAngle);
             }
 
             if (yaw)
@@ -264,17 +276,20 @@ namespace BDArmory.Modules
 
             if (smoothRotation)
             {
-                yawSpeed = Mathf.Clamp(yawOffset*smoothMultiplier, 1f, yawSpeedDPS)*deltaTime;
-                pitchSpeed = Mathf.Clamp(pitchOffset*smoothMultiplier, 1f, pitchSpeedDPS)*deltaTime;
+                yawSpeed = Mathf.Clamp(yawOffset * smoothMultiplier, 1f, yawSpeedDPS) * deltaTime;
+                pitchSpeed = Mathf.Clamp(pitchOffset * smoothMultiplier, 1f, pitchSpeedDPS) * deltaTime;
             }
             else
             {
-                yawSpeed = yawSpeedDPS*deltaTime;
-                pitchSpeed = pitchSpeedDPS*deltaTime;
+                yawSpeed = yawSpeedDPS * deltaTime;
+                pitchSpeed = pitchSpeedDPS * deltaTime;
             }
 
-            float linPitchMult = yawOffset > 0 ? Mathf.Clamp01((pitchOffset/yawOffset)*(yawSpeedDPS/pitchSpeedDPS)) : 1;
-            float linYawMult = pitchOffset > 0 ? Mathf.Clamp01((yawOffset/pitchOffset)*(pitchSpeedDPS/yawSpeedDPS)) : 1;
+            float linPitchMult =
+                yawOffset > 0 ? Mathf.Clamp01((pitchOffset / yawOffset) * (yawSpeedDPS / pitchSpeedDPS)) : 1;
+            float linYawMult = pitchOffset > 0
+                ? Mathf.Clamp01((yawOffset / pitchOffset) * (pitchSpeedDPS / yawSpeedDPS))
+                : 1;
 
             yawSpeed *= linYawMult;
             pitchSpeed *= linPitchMult;
@@ -284,10 +299,12 @@ namespace BDArmory.Modules
             pitchTransform.localRotation = Quaternion.RotateTowards(pitchTransform.localRotation, Quaternion.identity,
                 pitchSpeed);
 
-            if (yawTransform.localRotation == Quaternion.identity && pitchTransform.localRotation == Quaternion.identity)
+            if (yawTransform.localRotation == Quaternion.identity &&
+                pitchTransform.localRotation == Quaternion.identity)
             {
                 return true;
             }
+
             return false;
         }
 
@@ -297,9 +314,10 @@ namespace BDArmory.Modules
             {
                 return false;
             }
+
             bool withinView = Vector3.Angle(targetPosition - pitchTransform.position, pitchTransform.forward) <
                               thresholdDegrees;
-            bool withinDistance = (targetPosition - pitchTransform.position).sqrMagnitude < maxDistance*maxDistance;
+            bool withinDistance = (targetPosition - pitchTransform.position).sqrMagnitude < maxDistance * maxDistance;
             return (withinView && withinDistance);
         }
 
@@ -315,10 +333,12 @@ namespace BDArmory.Modules
             {
                 minPitchLimit = minPitch;
             }
+
             if (minPitchLimit == 0)
             {
                 Fields["minPitch"].guiActiveEditor = false;
             }
+
             minPitchRange.minValue = minPitchLimit;
             minPitchRange.maxValue = 0;
 
@@ -327,10 +347,12 @@ namespace BDArmory.Modules
             {
                 maxPitchLimit = maxPitch;
             }
+
             if (maxPitchLimit == 0)
             {
                 Fields["maxPitch"].guiActiveEditor = false;
             }
+
             maxPitchRange.maxValue = maxPitchLimit;
             maxPitchRange.minValue = 0;
 

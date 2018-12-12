@@ -6,6 +6,7 @@ using BDArmory.Bullets;
 using BDArmory.Core;
 using BDArmory.Core.Extension;
 using BDArmory.Core.Utils;
+using BDArmory.Events;
 using BDArmory.FX;
 using BDArmory.Misc;
 using BDArmory.Targeting;
@@ -26,7 +27,17 @@ namespace BDArmory.Modules
         Coroutine startupRoutine;
         Coroutine shutdownRoutine;
 
-        bool finalFire;
+        private bool _finalFire;
+        public bool FinalFire
+        {
+            get { return _finalFire; }
+            set
+            {
+                _finalFire = value;
+                Dependencies.Get<FireEventService>().PublishFireEvent(this.part.vessel.id, this.part.flightID, this.part.craftID, _finalFire);
+            }
+        }
+
 
         public int rippleIndex = 0;
 
@@ -747,11 +758,11 @@ namespace BDArmory.Modules
                         if (useRippleFire && (pointingAtSelf || isOverheated))
                         {
                             StartCoroutine(IncrementRippleIndex(0));
-                            finalFire = false;
+                            FinalFire = false;
                         }
                         else if (eWeaponType == WeaponTypes.Ballistic || eWeaponType == WeaponTypes.Cannon) //WeaponTypes.Cannon is deprecated
                         {
-                            finalFire = true;
+                            FinalFire = true;
                         }
                     }
                     else
@@ -813,7 +824,7 @@ namespace BDArmory.Modules
                     (TimeWarp.WarpMode != TimeWarp.Modes.HIGH || TimeWarp.CurrentRate == 1))
                 {
                     //Aim();
-                    if (BDArmorySettings.MULTIPLAYER_ACTIVE && BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(vessel.id))
+                    if (MultiplayerFire || (BDArmorySettings.MULTIPLAYER_ACTIVE && BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(vessel.id)))
                     {
                         StartCoroutine(AimAndFireAtEndOfFrame()); 
                     }
@@ -824,7 +835,7 @@ namespace BDArmory.Modules
                         if ((userFiring || autoFire || agHoldFiring) &&
                             (!turret || turret.TargetInRange(targetPosition, 10, float.MaxValue)))
                         {
-                            finalFire = true;
+                            FinalFire = true;
                         }
                         else
                         {
@@ -1072,6 +1083,7 @@ namespace BDArmory.Modules
 
                         firedBullet.transform.position = fireTransform.position;
 
+                        pBullet.OnlyVisual = this.MultiplayerFire;
                         pBullet.caliber = bulletInfo.caliber;
                         pBullet.bulletVelocity = bulletInfo.bulletVelocity;
                         pBullet.bulletMass = bulletInfo.bulletMass;
@@ -1750,7 +1762,7 @@ namespace BDArmory.Modules
             CheckWeaponSafety();
             CheckAIAutofire();
 
-            if (finalFire)
+            if (FinalFire)
             {
                 if (eWeaponType == WeaponTypes.Laser)
                 {
@@ -1775,18 +1787,18 @@ namespace BDArmory.Modules
                     if (useRippleFire && weaponManager.gunRippleIndex != rippleIndex)
                     {
                         //timeFired = Time.time + (initialFireDelay - (60f / roundsPerMinute)) * TimeWarp.CurrentRate;
-                        finalFire = false;
+                        FinalFire = false;
                     }
                     else
                     {
-                        finalFire = true;
+                        FinalFire = true;
                     }
 
-                    if (finalFire)
+                    if (FinalFire)
                         Fire();
                 }
 
-                finalFire = false;
+                FinalFire = false;
             }
 
             yield break;
@@ -2340,5 +2352,12 @@ namespace BDArmory.Modules
         }
 
         #endregion
+
+
+        public bool MultiplayerFire { get; set; }
+        public void UpdateVisualFire(bool messageFire)
+        {
+            this.MultiplayerFire = messageFire;
+        }
     }
 }

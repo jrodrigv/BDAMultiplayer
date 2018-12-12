@@ -15,8 +15,6 @@ namespace BDArmory.Multiplayer.Handler
     {
         public void ProcessMessage(TurretAimEventArgs message)
         {
-
-
             if (message == null) return;
 
             if (BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(message.VesselId))

@@ -71,6 +71,7 @@ namespace BDArmory.Multiplayer
             Dependencies.Register<IBdaMessageHandler<VesselTeamChangeEventArgs>, VesselTeamChangeMessageHandler>();
             Dependencies.Register<IBdaMessageHandler<ForceEventArgs>, ForceMessageHandler>();
             Dependencies.Register<IBdaMessageHandler<TurretAimEventArgs>, TurretAimMessageHandler>();
+            Dependencies.Register<IBdaMessageHandler<FireEventArgs>, FireMessageHandler>();
         }
 
         public void HandlerFunction(byte[] messageData)
@@ -99,6 +100,9 @@ namespace BDArmory.Multiplayer
                 case ArmorEventArgs _:
                     Dependencies.Get<IBdaMessageHandler<ArmorEventArgs>>().ProcessMessage((ArmorEventArgs)messageReceived.Content);
                     break;
+                case FireEventArgs _:
+                    Dependencies.Get<IBdaMessageHandler<FireEventArgs>>().ProcessMessage((FireEventArgs)messageReceived.Content);
+                    break;
                 case TurretAimEventArgs _:
                     Dependencies.Get<IBdaMessageHandler<TurretAimEventArgs>>().ProcessMessage((TurretAimEventArgs)messageReceived.Content);
                     break;
@@ -121,14 +125,13 @@ namespace BDArmory.Multiplayer
                 Dependencies.Get<VesselTeamChangeService>().OnActionExecuted += OnActionExecuted;
                 Dependencies.Get<ForceEventService>().OnActionExecuted += OnActionExecuted;
                 Dependencies.Get<TurretAimEventService>().OnActionExecuted += OnActionExecuted;
+                Dependencies.Get<FireEventService>().OnActionExecuted += OnActionExecuted;
             }
             else
             {
                 Debug.Log("[BDArmory]: LMP Multiplayer disabled");
                 BDArmorySettings.MULTIPLAYER_ACTIVE = false;
             }
-
-          
         }
 
         private void OnModMessageReceived(string id, byte[] data)
