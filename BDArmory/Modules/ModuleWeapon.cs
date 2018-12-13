@@ -33,8 +33,13 @@ namespace BDArmory.Modules
             get { return _finalFire; }
             set
             {
+                if (value != _finalFire)
+                {
+                    Dependencies.Get<FireEventService>().PublishFireEvent(this.part.vessel.id, this.part.flightID, this.part.craftID, value);
+                }
+
                 _finalFire = value;
-                Dependencies.Get<FireEventService>().PublishFireEvent(this.part.vessel.id, this.part.flightID, this.part.craftID, _finalFire);
+
             }
         }
 
@@ -796,6 +801,18 @@ namespace BDArmory.Modules
         {
             if (HighLogic.LoadedSceneIsFlight && !vessel.packed)
             {
+                if (MultiplayerFire)
+                {
+                    if (eWeaponType == WeaponTypes.Laser)
+                    {
+                        FireLaser();
+                    }
+                    else
+                    {
+                        Fire();
+                    }
+                }
+
                 if (!vessel.IsControllable)
                 {
                     if (weaponState != WeaponStates.PoweringDown || weaponState != WeaponStates.Disabled)
@@ -824,7 +841,7 @@ namespace BDArmory.Modules
                     (TimeWarp.WarpMode != TimeWarp.Modes.HIGH || TimeWarp.CurrentRate == 1))
                 {
                     //Aim();
-                    if (MultiplayerFire || (BDArmorySettings.MULTIPLAYER_ACTIVE && BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(vessel.id)))
+                    if ((BDArmorySettings.MULTIPLAYER_ACTIVE && BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(vessel.id)))
                     {
                         StartCoroutine(AimAndFireAtEndOfFrame()); 
                     }
@@ -1762,12 +1779,15 @@ namespace BDArmory.Modules
             CheckWeaponSafety();
             CheckAIAutofire();
 
+
+
             if (FinalFire)
             {
                 if (eWeaponType == WeaponTypes.Laser)
                 {
                     if (FireLaser())
                     {
+                        Dependencies.Get<FireEventService>().PublishFireEvent(this.part.vessel.id, this.part.flightID, this.part.craftID, true);
                         for (int i = 0; i < laserRenderers.Length; i++)
                         {
                             laserRenderers[i].enabled = true;
@@ -1795,10 +1815,17 @@ namespace BDArmory.Modules
                     }
 
                     if (FinalFire)
+                    {
+                        Dependencies.Get<FireEventService>().PublishFireEvent(this.part.vessel.id, this.part.flightID, this.part.craftID, true);
                         Fire();
+                    }
                 }
 
                 FinalFire = false;
+            }
+            else
+            {
+                Dependencies.Get<FireEventService>().PublishFireEvent(this.part.vessel.id, this.part.flightID, this.part.craftID, false);
             }
 
             yield break;

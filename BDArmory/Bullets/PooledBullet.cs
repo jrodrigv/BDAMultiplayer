@@ -651,13 +651,32 @@ namespace BDArmory.Bullets
 
                     if (airDetonation)
                     {
-                        ExplosionFx.CreateExplosion(hit.point, GetExplosivePower(), explModelPath, explSoundPath, false, caliber, null, default(Vector3), hitPart?.vessel != null ? hitPart.vessel : null);
+                        if (OnlyVisual)
+                        {
+
+                          ExplosionFx.CreateVisualExplosion(hit.point, GetExplosivePower(), explModelPath, explSoundPath);
+                        }
+                        else
+                        {
+                            ExplosionFx.CreateExplosion(hit.point, GetExplosivePower(), explModelPath, explSoundPath,
+                                false, caliber, null, default(Vector3),
+                                hitPart?.vessel != null ? hitPart.vessel : null);
+                        }
+                      
                     }
                     else
                     {
-                        ExplosionFx.CreateExplosion(hit.point - (ray.direction * 0.1f),
-                                                    GetExplosivePower(),
-                                                    explModelPath, explSoundPath, false, caliber, null, currentVelocity, hitPart?.vessel != null ? hitPart.vessel : null);
+                        if (OnlyVisual)
+                        {
+
+                            ExplosionFx.CreateVisualExplosion(hit.point - (ray.direction * 0.1f), GetExplosivePower(), explModelPath, explSoundPath, currentVelocity);
+                        }
+                        else
+                        {
+                            ExplosionFx.CreateExplosion(hit.point - (ray.direction * 0.1f),
+                                GetExplosivePower(),
+                                explModelPath, explSoundPath, false, caliber, null, currentVelocity, hitPart?.vessel != null ? hitPart.vessel : null);
+                        }  
                     }
 
                     KillBullet();
