@@ -997,7 +997,7 @@ namespace BDArmory.Modules
                         if (hasRecoil)
                         {
                             part.AddForceToPart((-fireTransform.forward) * (bulletVelocity * bulletMass / 1000 * BDArmorySettings.RECOIL_FACTOR * recoilReduction),
-                                fireTransform.position, ForceMode.Impulse);
+                                fireTransform.position, ForceMode.Impulse, false);
                         }
 
                         if (!effectsShot)
