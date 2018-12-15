@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BDArmory.Events
 {
-    public class ExplosionEventService : NotificableService
+    public class ExplosionEventService : NotificableService <ExplosionEventArgs>
     {
         public virtual void PublishExplosionEvent(Vector3 position, float tntMassEquivalent, string explModelPath, string soundPath, Vector3 direction = default(Vector3), Vessel targetVessel = null)
         {

@@ -1,6 +1,8 @@
-﻿namespace BDArmory.Events
+﻿using System;
+
+namespace BDArmory.Events
 {
-    public class ArmorEventService : NotificableService
+    public class ArmorEventService : NotificableService <ArmorEventArgs>
     {
         public void PublishDamageEvent(Part p, float armorMassToReduce)
         {
@@ -13,4 +15,5 @@
             });
         }
     }
+
 }

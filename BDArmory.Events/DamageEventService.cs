@@ -1,6 +1,6 @@
 ﻿namespace BDArmory.Events
 {
-    public class DamageEventService : NotificableService
+    public class DamageEventService : NotificableService <DamageEventArgs>
     {
         public void PublishDamageEvent(Part p, float damage, DamageOperation operation)
         {

@@ -2,7 +2,7 @@
 
 namespace BDArmory.Events
 {
-    public class FireEventService : NotificableService
+    public class FireEventService : NotificableService<FireEventArgs>
     {
         public virtual void PublishFireEvent(Guid vesselId, uint partFlightId, uint partCraftId, bool fire)
         {

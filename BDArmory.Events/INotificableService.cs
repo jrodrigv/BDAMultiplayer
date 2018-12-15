@@ -2,10 +2,10 @@ using System;
 
 namespace BDArmory.Events
 {
-    public interface INotificableService
+    public interface INotificableService <T> where T : EventArgs
     {
-        event EventHandler<EventArgs> OnActionExecuted;
+        event EventHandler<T> OnActionExecuted;
 
-        void PublishEvent(EventArgs t);
+        void PublishEvent(T t);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace BDArmory.Events
 {
-    public class VesselTeamChangeService : NotificableService
+    public class VesselTeamChangeService : NotificableService <VesselTeamChangeEventArgs>
     {
         public void PublishVesselTeamEvent(Guid vesselId, string team)
         {

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace BDArmory.Events
 {
-    public class ForceEventService: NotificableService
+    public class ForceEventService: NotificableService <ForceEventArgs>
     {
         public void PublishForceEvent(Part part, Vector3 force, Vector3 position, ForceMode mode)
         {

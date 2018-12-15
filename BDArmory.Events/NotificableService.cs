@@ -2,11 +2,11 @@ using System;
 
 namespace BDArmory.Events
 {
-    public abstract class NotificableService : INotificableService 
+    public abstract class NotificableService <T> where T : EventArgs
     {
-        public event EventHandler<EventArgs> OnActionExecuted;
+        public event EventHandler OnActionExecuted;
 
-        public void PublishEvent(EventArgs t)
+        public void PublishEvent(T t)
         {
             OnActionExecuted?.Invoke(this, t);
         }
