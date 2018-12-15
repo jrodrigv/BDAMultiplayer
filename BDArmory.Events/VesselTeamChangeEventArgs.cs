@@ -16,16 +16,4 @@ namespace BDArmory.Events
         public Guid VesselId { get; set; }
 
     }
-
-    public class VesselTeamChangeService : NotificableService
-    {
-        public void PublishVesselTeamEvent(Guid vesselId, string team)
-        {
-            PublishEvent(new VesselTeamChangeEventArgs
-            {
-                VesselId = vesselId,
-                Team = team
-            });
-        }
-    }
 }

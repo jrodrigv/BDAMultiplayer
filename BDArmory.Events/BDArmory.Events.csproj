@@ -48,6 +48,7 @@
     <Compile Include="TurretAimEventService.cs" />
     <Compile Include="VesselEventArgs.cs" />
     <Compile Include="VesselTeamChangeEventArgs.cs" />
+    <Compile Include="VesselTeamChangeService.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
