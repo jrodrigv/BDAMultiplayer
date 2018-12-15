@@ -386,7 +386,7 @@ namespace BDArmory.Bullets
                                     float accelerationMagnitude =
                                         forceAverageMagnitude / (hitPart.vessel.GetTotalMass() * 1000);
 
-                                    hitPart?.AddForceToPart(impactVector.normalized * accelerationMagnitude, hit.point, ForceMode.Acceleration);
+                                    hitPart?.AddForceToPart(impactVector.normalized * accelerationMagnitude, hit.point, ForceMode.Acceleration,false);
                                     if (BDArmorySettings.DRAW_DEBUG_LABELS)
                                         Debug.Log("[BDArmory]: Force Applied " + Math.Round(accelerationMagnitude, 2) + "| Vessel mass in kgs=" + hitPart.vessel.GetTotalMass() * 1000 + "| bullet effective mass =" + (bulletMass - tntMass));
                                 }
