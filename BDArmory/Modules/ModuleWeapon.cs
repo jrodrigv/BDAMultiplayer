@@ -2399,8 +2399,14 @@ namespace BDArmory.Modules
             return output.ToString();
         }
 
-		#endregion
-	}
+        #endregion
+
+        public bool MultiplayerFire { get; set; }
+        public void UpdateVisualFire(bool messageFire)
+        {
+            this.MultiplayerFire = messageFire;
+        }
+    }
 	#region UI //borrowing code from ModularMissile GUI
 	[KSPAddon(KSPAddon.Startup.EditorAny, false)]
 	public class WeaponGroupWindow : MonoBehaviour
