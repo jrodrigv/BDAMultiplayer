@@ -9,7 +9,7 @@ Installation process:
 - Remove your LMPServer too
 - Download this dev version of LMP https://ci.appveyor.com/api/buildjobs/m3qistldf58cbo3q/artifacts/LunaMultiplayer-Debug.zip
 - Copy the LMPClient folder inside your GameData folder
-- Copy the LMPServer whereever you want.
+- Copy the LMPServer wherever you want.
 - Execute the LMPServer/Server.exe once and close it after its finish starting.
 - Remove the config folder and use the Config folder from the release [BDArmoryMultiplayerEdition.0.1_031020192028.zip](https://github.com/jrodrigv/BDAMultiplayer/releases/download/0.1/BDArmoryMultiplayerEdition.0.1_031020192028.zip)
 - Download [BDArmoryMultiplayerEdition.0.1_031020192028.zip](https://github.com/jrodrigv/BDAMultiplayer/releases/download/0.1/BDArmoryMultiplayerEdition.0.1_031020192028.zip)  and copy it inside your GameData folder.
