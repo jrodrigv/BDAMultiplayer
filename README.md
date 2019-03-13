@@ -15,6 +15,9 @@ Installation process:
 - Download [BDArmoryMultiplayerEdition.0.1_031020192028.zip](https://github.com/jrodrigv/BDAMultiplayer/releases/download/0.1/BDArmoryMultiplayerEdition.0.1_031020192028.zip)  and copy it inside your GameData folder.
 - Enjoy and remember this is very beta and untested, you might find issues not only related to this mod, but to LMP and also to BDArmory it self. It is very important that if you find any issues to report them with clear steps to reproduce and always attaching your KSP.log file. 
 
+Did you enjoy playing BDA Multiplayer? Do you want to motivate me to continue working on this project?
+
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=jesus.rodriguez.valencia%40gmail.com&lc=ES&item_name=jrodriguez%20KSP%20mods&item_number=pre&currency_code=EUR&bn=PP-DonationsBF%3Abtn_donateCC_LG.gif%3ANonHosted)
 
 BDArmory Readme
 ================
