@@ -11,7 +11,7 @@ Installation process:
 - Copy the LMPClient folder inside your GameData folder
 - Copy the LMPServer wherever you want.
 - Execute the LMPServer/Server.exe once and close it after its finish starting.
-- Remove the config folder and use the Config folder from the release [BDArmoryMultiplayerEdition.0.1_031020192028.zip](https://github.com/jrodrigv/BDAMultiplayer/releases/download/0.1/BDArmoryMultiplayerEdition.0.1_031020192028.zip)
+- Remove the config folder and use the Config folder from the release https://github.com/jrodrigv/BDAMultiplayer/releases/download/0.1/LMPServerConfigForBDAM.zip
 - Download [BDArmoryMultiplayerEdition.0.1_031020192028.zip](https://github.com/jrodrigv/BDAMultiplayer/releases/download/0.1/BDArmoryMultiplayerEdition.0.1_031020192028.zip)  and copy it inside your GameData folder.
 - Enjoy and remember this is very beta and untested, you might find issues not only related to this mod, but to LMP and also to BDArmory it self. It is very important that if you find any issues to report them with clear steps to reproduce and always attaching your KSP.log file. 
 
