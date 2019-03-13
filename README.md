@@ -17,7 +17,7 @@ Installation process:
 
 Did you enjoy playing BDA Multiplayer? Do you want to motivate me to continue working on this project?
 
-[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=jesus.rodriguez.valencia%40gmail.com&lc=ES&item_name=jrodriguez%20KSP%20mods&item_number=pre&currency_code=EUR&bn=PP-DonationsBF%3Abtn_donateCC_LG.gif%3ANonHosted)
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=jesus.rodriguez.valencia%40gmail.com&lc=ES&item_name=jrodriguez%20KSP%20mods&item_number=bdam&currency_code=EUR&bn=PP-DonationsBF%3Abtn_donateCC_LG.gif%3ANonHosted)
 
 BDArmory Readme
 ================
