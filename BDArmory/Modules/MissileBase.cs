@@ -5,6 +5,7 @@ using System.Text;
 using BDArmory.Core;
 using BDArmory.Core.Extension;
 using BDArmory.CounterMeasure;
+using BDArmory.Events;
 using BDArmory.FX;
 using BDArmory.Guidances;
 using BDArmory.Misc;
@@ -285,6 +286,8 @@ namespace BDArmory.Modules
         }
 
         public abstract void Detonate();
+
+        public abstract void ActivateMissileMultiplayer();
 
         public abstract Vector3 GetForwardTransform();
 
@@ -1131,6 +1134,11 @@ namespace BDArmory.Modules
                 cruiseAltitudField.stepIncrement = 500f;
             }
             this.part.RefreshAssociatedWindows();
+        }
+
+        public void SendMissileFireEvent()
+        {
+           Dependencies.Get<MissileFiredEventService>().PublishMissileFired(this.vessel, Team);
         }
     }
 }

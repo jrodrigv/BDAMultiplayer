@@ -11,13 +11,13 @@ namespace BDArmory.Multiplayer.Handler
 {
     internal class VesselTeamChangeMessageHandler : IBdaMessageHandler<VesselTeamChangeEventArgs>
     {
-        public void ProcessMessage(VesselTeamChangeEventArgs message)
+        public bool ProcessMessage(VesselTeamChangeEventArgs message)
         {
-            if (message == null) return;
+            if (message == null) return false;
 
             Vessel vessel = FlightGlobals.VesselsLoaded.FirstOrDefault(v => v.id == message.VesselId);
 
-            if (vessel == null || vessel.packed) return;
+            if (vessel == null || vessel.packed) return false; 
 
             List<MissileFire> weaponManagerList = vessel.FindPartModulesImplementing<MissileFire>();
 
@@ -30,6 +30,8 @@ namespace BDArmory.Multiplayer.Handler
                     weaponManager.ToggleTeam(false);
                 }
             }
+
+            return true;
         }
     }
 }

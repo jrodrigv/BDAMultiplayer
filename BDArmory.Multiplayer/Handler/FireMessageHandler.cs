@@ -8,21 +8,22 @@ namespace BDArmory.Multiplayer.Handler
 {
     internal class FireMessageHandler : IBdaMessageHandler<FireEventArgs>
     {
-        public void ProcessMessage(FireEventArgs message)
+        public bool ProcessMessage(FireEventArgs message)
         {
-            if (message == null) return;
+            if (message == null) return false;
 
             if (BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(message.VesselId))
             {
-                return;
+                return false;
             }
 
             var moduleWeapon =
                 PartUtils.GetModuleFromPart<ModuleWeapon>(message.VesselId, message.PartFlightId, message.PartCraftId);
 
-            if (moduleWeapon == null) return;
+            if (moduleWeapon == null) return false;
 
             moduleWeapon.UpdateVisualFire(message.Fire);
+            return true;
         }
     }
 }

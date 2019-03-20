@@ -9,9 +9,9 @@ namespace BDArmory.Multiplayer.Handler
 {
     internal class ExplosionMessageHandler : IBdaMessageHandler<ExplosionEventArgs>
     {
-        public void ProcessMessage(ExplosionEventArgs message)
+        public bool ProcessMessage(ExplosionEventArgs message)
         {
-            if (message == null) return;
+            if (message == null) return false;
 
             Vector3 offsetCorrection = Vector3.zero;
 
@@ -30,6 +30,7 @@ namespace BDArmory.Multiplayer.Handler
             }
        
             ExplosionFx.CreateVisualExplosion(new Vector3(message.PositionX , message.PositionY , message.PositionZ),message.TntMassEquivalent, message.ExplosionModelPath, message.SoundPath, new Vector3(message.DirectionX, message.DirectionY, message.DirectionZ));
+            return true;
         }
     }
 }

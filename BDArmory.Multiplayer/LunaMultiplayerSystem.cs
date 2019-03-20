@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using BDArmory.Core;
 using BDArmory.Events;
 using BDArmory.Multiplayer.Handler;
@@ -19,19 +21,42 @@ namespace BDArmory.Multiplayer
         private const string ModName = "BDArmory";
         public const bool Relay = true;
         public EventData<string, byte[]> onModMessageReceivedEvent;
+        public static Queue<MissileFireEventArgs> missileMessagePending { get; set; } = new Queue<MissileFireEventArgs>();
+
 
         void Start()
         {
-          RegisterSystem();
-          SuscribeToCoreEvents();
+            RegisterSystem();
+            SuscribeToCoreEvents();
         }
 
         public void Update()
         {
             SetupBDArmoryMultiplayer();
+            ProcessDelayedMessages();
         }
 
         private void SetupBDArmoryMultiplayer()
+        {
+            ObtainBasicLMPData();
+            ProcessDelayedMessages();
+        }
+
+        private void ProcessDelayedMessages()
+        {
+            if (missileMessagePending.Count == 0)
+            {
+                return;
+            }
+
+            if (Dependencies.Get<IBdaMessageHandler<MissileFireEventArgs>>()
+                .ProcessMessage(missileMessagePending.Peek()))
+            {
+                missileMessagePending.Dequeue();
+            }
+        }
+
+        private static void ObtainBasicLMPData()
         {
             if (MainSystem.NetworkState <= ClientState.Disconnected)
             {
@@ -41,20 +66,20 @@ namespace BDArmory.Multiplayer
             {
                 BDArmorySettings.MULTIPLAYER_ACTIVE = true;
 
-                if(FlightGlobals.ActiveVessel == null) return;
-                
-                if ( String.IsNullOrEmpty(BDArmorySettings.MULTIPLAYER_OWNER_ID))
+                if (FlightGlobals.ActiveVessel == null) return;
+
+                if (String.IsNullOrEmpty(BDArmorySettings.MULTIPLAYER_OWNER_ID))
                 {
                     BDArmorySettings.MULTIPLAYER_OWNER_ID =
                         LockSystem.LockQuery.GetControlLockOwner(FlightGlobals.ActiveVessel.id);
                 }
                 else
                 {
-                    var locks = LockSystem.LockQuery.GetAllLocks();
-
-                    foreach (var locklmp in locks)
+                    foreach (var locklmp in LockSystem.LockQuery.GetAllLocks())
                     {
-                        if (LockSystem.LockQuery.GetControlLockOwner(locklmp.VesselId) == BDArmorySettings.MULTIPLAYER_OWNER_ID && !BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(locklmp.VesselId))
+                        if (LockSystem.LockQuery.GetControlLockOwner(locklmp.VesselId) ==
+                            BDArmorySettings.MULTIPLAYER_OWNER_ID &&
+                            !BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(locklmp.VesselId))
                         {
                             BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Add(locklmp.VesselId);
                         }
@@ -72,6 +97,7 @@ namespace BDArmory.Multiplayer
             Dependencies.Register<IBdaMessageHandler<ForceEventArgs>, ForceMessageHandler>();
             Dependencies.Register<IBdaMessageHandler<TurretAimEventArgs>, TurretAimMessageHandler>();
             Dependencies.Register<IBdaMessageHandler<FireEventArgs>, FireMessageHandler>();
+            Dependencies.Register<IBdaMessageHandler<MissileFireEventArgs>,MissileFireMessageHandler>();
         }
 
         public void HandlerFunction(byte[] messageData)
@@ -85,28 +111,31 @@ namespace BDArmory.Multiplayer
         {
             switch (messageReceived.Content)
             {
-                case DamageEventArgs _:
-                    Dependencies.Get<IBdaMessageHandler<DamageEventArgs>>().ProcessMessage((DamageEventArgs) messageReceived.Content);
+                case DamageEventArgs args:
+                    Dependencies.Get<IBdaMessageHandler<DamageEventArgs>>().ProcessMessage(args);
                     break;
-                case ExplosionEventArgs _:
-                    Dependencies.Get<IBdaMessageHandler<ExplosionEventArgs>>().ProcessMessage((ExplosionEventArgs)messageReceived.Content);
+                case ExplosionEventArgs args:
+                    Dependencies.Get<IBdaMessageHandler<ExplosionEventArgs>>().ProcessMessage(args);
                     break;
-                case ForceEventArgs _:
-                    Dependencies.Get<IBdaMessageHandler<ForceEventArgs>>().ProcessMessage((ForceEventArgs)messageReceived.Content);
+                case ForceEventArgs args:
+                    Dependencies.Get<IBdaMessageHandler<ForceEventArgs>>().ProcessMessage(args);
                     break;
-                case VesselTeamChangeEventArgs _:
-                    Dependencies.Get<IBdaMessageHandler<VesselTeamChangeEventArgs>>().ProcessMessage((VesselTeamChangeEventArgs)messageReceived.Content);
+                case VesselTeamChangeEventArgs args:
+                    Dependencies.Get<IBdaMessageHandler<VesselTeamChangeEventArgs>>().ProcessMessage(args);
                     break;
-                case ArmorEventArgs _:
-                    Dependencies.Get<IBdaMessageHandler<ArmorEventArgs>>().ProcessMessage((ArmorEventArgs)messageReceived.Content);
+                case ArmorEventArgs args:
+                    Dependencies.Get<IBdaMessageHandler<ArmorEventArgs>>().ProcessMessage(args);
                     break;
-                case FireEventArgs _:
-                    Dependencies.Get<IBdaMessageHandler<FireEventArgs>>().ProcessMessage((FireEventArgs)messageReceived.Content);
+                case FireEventArgs args:
+                    Dependencies.Get<IBdaMessageHandler<FireEventArgs>>().ProcessMessage(args);
                     break;
-                case TurretAimEventArgs _:
-                    Dependencies.Get<IBdaMessageHandler<TurretAimEventArgs>>().ProcessMessage((TurretAimEventArgs)messageReceived.Content);
+                case TurretAimEventArgs args:
+                    Dependencies.Get<IBdaMessageHandler<TurretAimEventArgs>>().ProcessMessage(args);
                     break;
-               
+                case MissileFireEventArgs args:
+                    Dependencies.Get<IBdaMessageHandler<MissileFireEventArgs>>().ProcessMessage(args);
+                    break;
+
             }
         }
 
@@ -126,6 +155,7 @@ namespace BDArmory.Multiplayer
                 Dependencies.Get<ForceEventService>().OnActionExecuted += OnActionExecuted;
                 Dependencies.Get<TurretAimEventService>().OnActionExecuted += OnActionExecuted;
                 Dependencies.Get<FireEventService>().OnActionExecuted += OnActionExecuted;
+                Dependencies.Get<MissileFiredEventService>().OnActionExecuted += OnActionExecuted;
             }
             else
             {

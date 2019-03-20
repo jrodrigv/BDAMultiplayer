@@ -41,6 +41,8 @@
     <Compile Include="FireEventService.cs" />
     <Compile Include="ForceEventService.cs" />
     <Compile Include="INotificableService.cs" />
+    <Compile Include="MissileFiredEventService.cs" />
+    <Compile Include="MissileFireEventArgs.cs" />
     <Compile Include="NotificableService.cs" />
     <Compile Include="PartEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

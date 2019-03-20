@@ -854,6 +854,9 @@ namespace BDArmory.Modules
                 SourceVessel = vessel;
                 SetTargeting();
                 Jettison();
+
+                
+
                 AddTargetInfoToVessel();
                 IncreaseTolerance();
 
@@ -868,6 +871,7 @@ namespace BDArmory.Modules
                     vessel.ActionGroups.ToggleGroup(KSPActionGroup.SAS);
                 }
 
+
                 TimeFired = Time.time;
                 MissileState = MissileStates.Drop;
 
@@ -880,6 +884,20 @@ namespace BDArmory.Modules
             {
                 BDArmorySetup.Instance.ActiveWeaponManager.UpdateList();
             }
+            SendMissileFireEvent();
+        }
+
+        public override void ActivateMissileMultiplayer()
+        {
+            GameEvents.onPartDie.Add(PartDie);
+            BDATargetManager.FiredMissiles.Add(this);
+            AddTargetInfoToVessel();
+            IncreaseTolerance();
+            vessel.vesselName = GetShortName();
+            vessel.vesselType = VesselType.Plane;
+            TimeFired = Time.time;
+            MissileState = MissileStates.Drop;
+            DetonationDistanceState = DetonationDistanceStates.NotSafe;
         }
 
         private void IncreaseTolerance()

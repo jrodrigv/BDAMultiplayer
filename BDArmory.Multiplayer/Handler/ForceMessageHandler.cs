@@ -13,16 +13,18 @@ namespace BDArmory.Multiplayer.Handler
 {
     internal class ForceMessageHandler : IBdaMessageHandler<ForceEventArgs>
     {
-        public void ProcessMessage(ForceEventArgs message)
+        public bool ProcessMessage(ForceEventArgs message)
         {
-            if (message == null) return;
+            if (message == null) return false;
 
             Part part = PartUtils.GetPart(message.VesselId, message.PartFlightId, message.PartCraftId);
 
-            if (part == null) return;
+            if (part == null) return false;
 
             part.AddForceToPart(new Vector3(message.ForceX, message.ForceY, message.ForceZ),
                 new Vector3(message.PositionX, message.PositionY, message.PositionZ), message.Mode, false);
+
+            return true;
 
         }
     }

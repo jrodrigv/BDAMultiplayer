@@ -732,7 +732,8 @@ namespace BDArmory.Modules
 		    part.force_activate();
 		    part.Unpack();
 		    vessel.situation = Vessel.Situations.FLYING;
-		    part.rb.isKinematic = false;
+
+            part.rb.isKinematic = false;
 		    part.bodyLiftMultiplier = 0;
 		    part.dragModel = Part.DragModel.NONE;
 
@@ -756,10 +757,29 @@ namespace BDArmory.Modules
             MissileState = MissileStates.Drop;
 		    part.crashTolerance = 9999; //to combat stresses of launch, missle generate a lot of G Force
 
+
+            SendMissileFireEvent();
             StartCoroutine(MissileRoutine());
 		}
 
-		IEnumerator DecoupleRoutine()
+        public override void ActivateMissileMultiplayer()
+        {
+            BDATargetManager.FiredMissiles.Add(this);
+            part.force_activate();
+            part.Unpack();
+            vessel.situation = Vessel.Situations.FLYING;
+            part.rb.isKinematic = false;
+            part.bodyLiftMultiplier = 0;
+            part.dragModel = Part.DragModel.NONE;
+            AddTargetInfoToVessel();
+            vessel.vesselName = GetShortName();
+            vessel.vesselType = VesselType.Probe;
+            TimeFired = Time.time;
+            part.crashTolerance = 9999;
+            StartCoroutine(MissileRoutine());
+        }
+
+        IEnumerator DecoupleRoutine()
 		{
 			yield return new WaitForFixedUpdate();
 

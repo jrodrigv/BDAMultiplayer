@@ -9,13 +9,13 @@ namespace BDArmory.Multiplayer.Handler
 {
     internal class DamageMessageHandler : IBdaMessageHandler<DamageEventArgs>
     {
-        public void ProcessMessage(DamageEventArgs message)
+        public bool  ProcessMessage(DamageEventArgs message)
         {
-            if(message == null) return;
+            if(message == null) return false;
 
             Part part = PartUtils.GetPart(message.VesselId, message.PartFlightId, message.PartCraftId);
 
-            if (part == null) return;
+            if (part == null) return false;
 
             if (message.Operation == DamageOperation.Add)
             {
@@ -25,7 +25,11 @@ namespace BDArmory.Multiplayer.Handler
             {
                 Dependencies.Get<IDamageService>().SetDamageToPart(part, message.Damage);
             }
-            
+
+            return true;
+
         }
     }
+
+
 }

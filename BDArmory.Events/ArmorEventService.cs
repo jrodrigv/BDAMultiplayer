@@ -1,4 +1,5 @@
 ﻿using System;
+using BDArmory.Events;
 
 namespace BDArmory.Events
 {
@@ -15,5 +16,4 @@ namespace BDArmory.Events
             });
         }
     }
-
 }
