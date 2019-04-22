@@ -4,7 +4,7 @@ BDAMultiplayer Readme
 
 This is a branch of BDArmory with multiplayer support based on LMP.
 
-Installation process:
+Installation process for KSP 1.6.1:
 - Remove any BDArmory folder and LMPClient folder from your GameData folder
 - Remove your LMPServer too
 - Download this dev version of LMP https://ci.appveyor.com/api/buildjobs/m3qistldf58cbo3q/artifacts/LunaMultiplayer-Debug.zip
