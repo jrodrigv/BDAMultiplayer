@@ -145,10 +145,10 @@ namespace BDArmory.Modules
                     targetAudioRotationRate = rate;
                 }
 
-                if (Time.time - this.lastTurretUpdate > 0.1f)
+                if (Time.time - this.lastTurretUpdate > 0.066f)
                 {
-                    if (Quaternion.Angle(yawTransform.localRotation, this.lastYawRotation) > 0 ||
-                        Quaternion.Angle(pitchTransform.localRotation, this.lastPitchRotation) > 0)
+                    if (Quaternion.Angle(yawTransform.localRotation, this.lastYawRotation) > 0.5f ||
+                        Quaternion.Angle(pitchTransform.localRotation, this.lastPitchRotation) > 0.5f)
                     {
                         Dependencies.Get<TurretAimEventService>().PublishTurretAimEvent(this.part.vessel.id,
                             this.part.flightID, this.part.craftID, pitchTransform.localRotation,
