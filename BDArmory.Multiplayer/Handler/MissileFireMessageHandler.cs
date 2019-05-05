@@ -44,7 +44,11 @@ namespace BDArmory.Multiplayer.Handler
             {
                 return true;
             }
-           
+
+            if (missile.SourceVessel!= null && BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(missile.SourceVessel.id))
+            {
+                return true;
+            }           
            
             missile.Team = message.Team;
             missile.ActivateMissileMultiplayer();
