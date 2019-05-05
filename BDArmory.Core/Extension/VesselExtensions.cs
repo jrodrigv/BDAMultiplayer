@@ -41,6 +41,5 @@
                 return new Vector3d(0, 0, 0);
             }
         }
-
     }
 }

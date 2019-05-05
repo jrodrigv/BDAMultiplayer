@@ -10,19 +10,16 @@ namespace BDArmory.Modules
     {
         [KSPField] public int turretID = 0;
 
-
         [KSPField] public string pitchTransformName = "pitchTransform";
         public Transform pitchTransform;
 
         [KSPField] public string yawTransformName = "yawTransform";
         public Transform yawTransform;
 
-
         Transform referenceTransform; //set this to gun's fireTransform
 
         [KSPField] public float pitchSpeedDPS;
         [KSPField] public float yawSpeedDPS;
-
 
         [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true, guiName = "Max Pitch"),
          UI_FloatRange(minValue = 0f, maxValue = 60f, stepIncrement = 1f, scene = UI_Scene.All)]
@@ -59,13 +56,11 @@ namespace BDArmory.Modules
         float maxAudioRotRate;
         private double lastTurretUpdate = 0f;
 
-
         public override void OnStart(StartState state)
         {
             base.OnStart(state);
 
             SetupTweakables();
-
 
             pitchTransform = part.FindModelTransform(pitchTransformName);
             yawTransform = part.FindModelTransform(yawTransformName);
@@ -115,10 +110,8 @@ namespace BDArmory.Modules
             {
                 if (hasAudio)
                 {
-                    audioRotationRate =
-                        Mathf.Lerp(audioRotationRate, targetAudioRotationRate, 20 * Time.fixedDeltaTime);
+                    audioRotationRate = Mathf.Lerp(audioRotationRate, targetAudioRotationRate, 20 * Time.fixedDeltaTime);
                     audioRotationRate = Mathf.Clamp01(audioRotationRate);
-
 
                     if (audioRotationRate < 0.05f)
                     {
@@ -132,14 +125,9 @@ namespace BDArmory.Modules
                         audioSource.pitch = Mathf.Clamp(audioRotationRate, minAudioPitch, maxAudioPitch);
                     }
 
-
                     Vector3 tDir = yawTransform.parent.InverseTransformDirection(pitchTransform.forward);
                     float angle = Vector3.Angle(tDir, lastTurretDirection);
-
-
                     float rate = Mathf.Clamp01((angle / Time.fixedDeltaTime) / maxAudioRotRate);
-
-
                     lastTurretDirection = tDir;
 
                     targetAudioRotationRate = rate;
@@ -219,11 +207,8 @@ namespace BDArmory.Modules
             float pitchOffset = Mathf.Abs(targetPitchAngle - currentPitch);
             targetPitchAngle = Mathf.Clamp(targetPitchAngle, minPitch, maxPitch); // clamp pitch
 
-            float linPitchMult =
-                yawOffset > 0 ? Mathf.Clamp01((pitchOffset / yawOffset) * (yawSpeedDPS / pitchSpeedDPS)) : 1;
-            float linYawMult = pitchOffset > 0
-                ? Mathf.Clamp01((yawOffset / pitchOffset) * (pitchSpeedDPS / yawSpeedDPS))
-                : 1;
+            float linPitchMult = yawOffset > 0 ? Mathf.Clamp01((pitchOffset / yawOffset) * (yawSpeedDPS / pitchSpeedDPS)) : 1;
+            float linYawMult = pitchOffset > 0 ? Mathf.Clamp01((yawOffset / pitchOffset) * (pitchSpeedDPS / yawSpeedDPS)) : 1;
 
             float yawSpeed;
             float pitchSpeed;
@@ -285,11 +270,8 @@ namespace BDArmory.Modules
                 pitchSpeed = pitchSpeedDPS * deltaTime;
             }
 
-            float linPitchMult =
-                yawOffset > 0 ? Mathf.Clamp01((pitchOffset / yawOffset) * (yawSpeedDPS / pitchSpeedDPS)) : 1;
-            float linYawMult = pitchOffset > 0
-                ? Mathf.Clamp01((yawOffset / pitchOffset) * (pitchSpeedDPS / yawSpeedDPS))
-                : 1;
+            float linPitchMult = yawOffset > 0 ? Mathf.Clamp01((pitchOffset / yawOffset) * (yawSpeedDPS / pitchSpeedDPS)) : 1;
+            float linYawMult = pitchOffset > 0 ? Mathf.Clamp01((yawOffset / pitchOffset) * (pitchSpeedDPS / yawSpeedDPS)) : 1;
 
             yawSpeed *= linYawMult;
             pitchSpeed *= linPitchMult;
@@ -328,7 +310,7 @@ namespace BDArmory.Modules
 
         void SetupTweakables()
         {
-            UI_FloatRange minPitchRange = (UI_FloatRange) Fields["minPitch"].uiControlEditor;
+            UI_FloatRange minPitchRange = (UI_FloatRange)Fields["minPitch"].uiControlEditor;
             if (minPitchLimit > 90)
             {
                 minPitchLimit = minPitch;
@@ -342,7 +324,7 @@ namespace BDArmory.Modules
             minPitchRange.minValue = minPitchLimit;
             minPitchRange.maxValue = 0;
 
-            UI_FloatRange maxPitchRange = (UI_FloatRange) Fields["maxPitch"].uiControlEditor;
+            UI_FloatRange maxPitchRange = (UI_FloatRange)Fields["maxPitch"].uiControlEditor;
             if (maxPitchLimit > 90)
             {
                 maxPitchLimit = maxPitch;
@@ -356,7 +338,7 @@ namespace BDArmory.Modules
             maxPitchRange.maxValue = maxPitchLimit;
             maxPitchRange.minValue = 0;
 
-            UI_FloatRange yawRangeEd = (UI_FloatRange) Fields["yawRange"].uiControlEditor;
+            UI_FloatRange yawRangeEd = (UI_FloatRange)Fields["yawRange"].uiControlEditor;
             if (yawRangeLimit > 360)
             {
                 yawRangeLimit = yawRange;

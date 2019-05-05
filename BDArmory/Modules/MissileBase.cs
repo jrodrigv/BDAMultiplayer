@@ -29,6 +29,7 @@ namespace BDArmory.Modules
         /// //////////////////////////////////
 
         protected WeaponClasses weaponClass;
+
         public WeaponClasses GetWeaponClass()
         {
             return weaponClass;
@@ -59,10 +60,13 @@ namespace BDArmory.Modules
         [KSPField]
         public float minLaunchSpeed = 0;
 
+        public virtual float ClearanceRadius => 0.14f;
+
+        public virtual float ClearanceLength => 0.14f;
+
         [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "Max Off Boresight"),
             UI_FloatRange(minValue = 0f, maxValue = 360f, stepIncrement = 5f, scene = UI_Scene.Editor, affectSymCounterparts = UI_Scene.All)]
         public float maxOffBoresight = 360;
-
 
         [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "Detonation distance override"), UI_FloatRange(minValue = 0f, maxValue = 100f, stepIncrement = 1f, scene = UI_Scene.Editor, affectSymCounterparts = UI_Scene.All)]
         public float DetonationDistance = -1;
@@ -112,7 +116,8 @@ namespace BDArmory.Modules
         public float activeRadarRange = 6000;
 
         [Obsolete("Use activeRadarLockTrackCurve!")]
-        [KSPField] public float activeRadarMinThresh = 140;
+        [KSPField]
+        public float activeRadarMinThresh = 140;
 
         [KSPField]
         public FloatCurve activeRadarLockTrackCurve = new FloatCurve();             // floatcurve to define min/max range and lockable radar cross section
@@ -149,7 +154,7 @@ namespace BDArmory.Modules
 
         public bool HasFired { get; set; } = false;
 
-        public bool Team { get; set; }
+        public BDTeam Team { get; set; }
 
         public bool HasMissed { get; set; } = false;
 
@@ -294,7 +299,7 @@ namespace BDArmory.Modules
         protected void AddTargetInfoToVessel()
         {
             TargetInfo info = vessel.gameObject.AddComponent<TargetInfo>();
-            info.team = BDATargetManager.BoolToTeam(Team);
+            info.Team = Team;
             info.isMissile = true;
             info.MissileBaseModule = this;
         }
@@ -586,7 +591,6 @@ namespace BDArmory.Modules
                                                 else
                                                     RadarWarningReceiver.PingRWR(ray, lockedSensorFOV, RadarWarningReceiver.RWRThreatTypes.MissileLaunch, 2f);
                                                 Debug.Log("[BDArmory]: Pitbull! Radar missilebase has gone active.  Radar sig strength: " + radarTarget.signalStrength.ToString("0.0"));
-
                                             }
                                             else if (locksCount > 2)
                                             {
@@ -625,7 +629,6 @@ namespace BDArmory.Modules
                             TargetAcquired = false;
                             ActiveRadar = false;
                         }
-
                     }
                 }
             }
@@ -669,7 +672,6 @@ namespace BDArmory.Modules
                                 lockedTarget = scannedTargets[i];
                                 smallestAngle = angle;
                             }
-
 
                             ActiveRadar = true;
                             return;
@@ -728,7 +730,7 @@ namespace BDArmory.Modules
         {
             return (ti.isMissile && engageMissile) ||
                     (!ti.isMissile && ti.isFlying && engageAir) ||
-                    ((ti.isLanded || ti.isSplashed) && engageGround) ||
+                    ((ti.isLandedOrSurfaceSplashed || ti.isSplashed) && engageGround) ||
                     (ti.isUnderwater && engageSLW);
         }
 
@@ -777,7 +779,7 @@ namespace BDArmory.Modules
             }
         }
 
-        public void DrawDebugLine(Vector3 start, Vector3 end,Color color = default(Color))
+        public void DrawDebugLine(Vector3 start, Vector3 end, Color color = default(Color))
         {
             if (BDArmorySettings.DRAW_DEBUG_LINES)
             {
@@ -816,7 +818,6 @@ namespace BDArmory.Modules
                 _originalDistance = Vector3.Distance(targetPosition, missile.vessel.CoM);
 
                 //calculating expected apogee bases on isosceles triangle
-
             }
 
             debugString.Append($"_originalDistance: {_originalDistance}");
@@ -871,7 +872,6 @@ namespace BDArmory.Modules
                     agmTarget = missile.vessel.CoM + direction;
                 }
 
-
                 debugString.Append($"Throttle: {missile.Throttle}");
                 debugString.Append(Environment.NewLine);
             }
@@ -889,7 +889,6 @@ namespace BDArmory.Modules
                     }
                 }
                 missile.Throttle = Mathf.Clamp((float)(missile.vessel.atmDensity * 10f), 0.01f, 1f);
-
             }
             return agmTarget;
         }
@@ -902,7 +901,6 @@ namespace BDArmory.Modules
 
             double time1 = (-vi + Math.Sqrt(Math.Pow(vi, 2) - 4 * (0.5f * a) * (-d))) / a;
             double time2 = (-vi - Math.Sqrt(Math.Pow(vi, 2) - 4 * (0.5f * a) * (-d))) / a;
-
 
             return Math.Max(time1, time2);
         }
@@ -923,92 +921,91 @@ namespace BDArmory.Modules
 
         public void CheckDetonationState()
         {
-            //Guard clauses     
+            //Guard clauses
             if (!TargetAcquired) return;
 
-                var targetDistancePerFrame = TargetVelocity * Time.fixedDeltaTime;
-                var missileDistancePerFrame = vessel.Velocity() * Time.fixedDeltaTime;
+            var targetDistancePerFrame = TargetVelocity * Time.fixedDeltaTime;
+            var missileDistancePerFrame = vessel.Velocity() * Time.fixedDeltaTime;
 
-                var futureTargetPosition = (TargetPosition + targetDistancePerFrame);
-                var futureMissilePosition = (vessel.CoM + missileDistancePerFrame);
+            var futureTargetPosition = (TargetPosition + targetDistancePerFrame);
+            var futureMissilePosition = (vessel.CoM + missileDistancePerFrame);
 
-               var relativeSpeed = (TargetVelocity - vessel.Velocity()).magnitude * Time.fixedDeltaTime;
+            var relativeSpeed = (TargetVelocity - vessel.Velocity()).magnitude * Time.fixedDeltaTime;
 
-                switch (DetonationDistanceState)
-                {
-                    case DetonationDistanceStates.NotSafe:
-                        //Lets check if we are at a safe distance from the source vessel
+            switch (DetonationDistanceState)
+            {
+                case DetonationDistanceStates.NotSafe:
+                    //Lets check if we are at a safe distance from the source vessel
 
-                        using (var hitsEnu = Physics.OverlapSphere(futureMissilePosition, GetBlastRadius() * 3f, 557057).AsEnumerable().GetEnumerator())
+                    using (var hitsEnu = Physics.OverlapSphere(futureMissilePosition, GetBlastRadius() * 3f, 557057).AsEnumerable().GetEnumerator())
+                    {
+                        while (hitsEnu.MoveNext())
                         {
-                            while (hitsEnu.MoveNext())
+                            if (hitsEnu.Current == null) continue;
+                            try
                             {
-                                if (hitsEnu.Current == null) continue;
-                                try
-                                {
-                                    Part partHit = hitsEnu.Current.GetComponentInParent<Part>();
+                                Part partHit = hitsEnu.Current.GetComponentInParent<Part>();
 
-                                    if (partHit?.vessel == SourceVessel)
-                                    {
-                                        //We found a hit to the vessel
-                                        return;
-                                    }
-                                }
-                                catch
+                                if (partHit?.vessel == SourceVessel)
                                 {
-                                    // ignored
+                                    //We found a hit to the vessel
+                                    return;
                                 }
                             }
-                        }
-
-                        //We are safe and we can continue with the cruising phase
-
-                        DetonationDistanceState = DetonationDistanceStates.Cruising;
-                        break;
-                    case DetonationDistanceStates.Cruising:
-
-                        if (Vector3.Distance(futureMissilePosition, futureTargetPosition) < GetBlastRadius() * 10)
-                        {
-                            //We are now close enough to start checking the detonation distance
-                            DetonationDistanceState = DetonationDistanceStates.CheckingProximity;
-                        }
-                        else
-                        {
-                            BDModularGuidance bdModularGuidance = this as BDModularGuidance;
-
-
-
-                            if (bdModularGuidance == null) return;
-
-                            if(Vector3.Distance(futureMissilePosition, futureTargetPosition) > this.DetonationDistance) return;
-
-
-                            DetonationDistanceState = DetonationDistanceStates.CheckingProximity;
-                        }
-                    break;
-                    case DetonationDistanceStates.CheckingProximity:
-
-                        if (DetonationDistance == 0)
-                        {
-                            if (weaponClass == WeaponClasses.Bomb) return;
-
-                            if (TimeIndex > 1f)
+                            catch
                             {
+                                // ignored
+                            }
+                        }
+                    }
+
+                    //We are safe and we can continue with the cruising phase
+
+                    DetonationDistanceState = DetonationDistanceStates.Cruising;
+                    break;
+
+                case DetonationDistanceStates.Cruising:
+
+                    if (Vector3.Distance(futureMissilePosition, futureTargetPosition) < GetBlastRadius() * 10)
+                    {
+                        //We are now close enough to start checking the detonation distance
+                        DetonationDistanceState = DetonationDistanceStates.CheckingProximity;
+                    }
+                    else
+                    {
+                        BDModularGuidance bdModularGuidance = this as BDModularGuidance;
+
+                        if (bdModularGuidance == null) return;
+
+                        if (Vector3.Distance(futureMissilePosition, futureTargetPosition) > this.DetonationDistance) return;
+
+                        DetonationDistanceState = DetonationDistanceStates.CheckingProximity;
+                    }
+                    break;
+
+                case DetonationDistanceStates.CheckingProximity:
+
+                    if (DetonationDistance == 0)
+                    {
+                        if (weaponClass == WeaponClasses.Bomb) return;
+
+                        if (TimeIndex > 1f)
+                        {
                             //Vector3 floatingorigin_current = FloatingOrigin.Offset;
-                           
-                                Ray rayFuturePosition = new Ray(vessel.CoM, futureMissilePosition);
 
-                                var hitsFuture = Physics.RaycastAll(rayFuturePosition, (float) missileDistancePerFrame.magnitude, 557057).AsEnumerable();
+                            Ray rayFuturePosition = new Ray(vessel.CoM, futureMissilePosition);
 
-                                using (var hitsEnu = hitsFuture.GetEnumerator())
+                            var hitsFuture = Physics.RaycastAll(rayFuturePosition, (float)missileDistancePerFrame.magnitude, 557057).AsEnumerable();
+
+                            using (var hitsEnu = hitsFuture.GetEnumerator())
+                            {
+                                while (hitsEnu.MoveNext())
                                 {
-                                    while (hitsEnu.MoveNext())
-                                    {
-                                        RaycastHit hit = hitsEnu.Current;
+                                    RaycastHit hit = hitsEnu.Current;
 
-                                        try
-                                        {
-                                            var hitPart = hit.collider.gameObject.GetComponentInParent<Part>();
+                                    try
+                                    {
+                                        var hitPart = hit.collider.gameObject.GetComponentInParent<Part>();
 
                                                 if (hitPart?.vessel != SourceVessel && hitPart?.vessel != vessel )
                                                 {
@@ -1029,52 +1026,49 @@ namespace BDArmory.Modules
                                 }
                             }
 
-                            previousPos = part.transform.position;
-                        
-                        }
-                        else
+                        previousPos = part.transform.position;
+                    }
+                    else
+                    {
+                        float optimalDistance = (float)(Math.Max(DetonationDistance, relativeSpeed));
+
+                        using (var hitsEnu = Physics.OverlapSphere(vessel.CoM, optimalDistance, 557057).AsEnumerable().GetEnumerator())
                         {
-                            float optimalDistance = (float)(Math.Max(DetonationDistance, relativeSpeed));
-
-                            using (var hitsEnu = Physics.OverlapSphere(vessel.CoM, optimalDistance, 557057).AsEnumerable().GetEnumerator())
+                            while (hitsEnu.MoveNext())
                             {
-                                while (hitsEnu.MoveNext())
+                                if (hitsEnu.Current == null) continue;
+
+                                try
                                 {
-                                    if (hitsEnu.Current == null) continue;
+                                    Part partHit = hitsEnu.Current.GetComponentInParent<Part>();
 
-                                    try
-                                    {
-                                        Part partHit = hitsEnu.Current.GetComponentInParent<Part>();
+                                    if (partHit?.vessel == vessel || partHit?.vessel == SourceVessel) continue;
 
-                                        if (partHit?.vessel == vessel || partHit?.vessel == SourceVessel) continue;
+                                    Debug.Log("[BDArmory]: Missile proximity sphere hit | Distance overlap = " + optimalDistance + "| Part name = " + partHit.name);
 
-                                        Debug.Log("[BDArmory]: Missile proximity sphere hit | Distance overlap = " + optimalDistance + "| Part name = " + partHit.name);
-
-                                        //We found a hit a different vessel than ours
-                                        DetonationDistanceState = DetonationDistanceStates.Detonate;
-                                        return;
-                                    }
-                                    catch
-                                    {
-                                        // ignored
-                                    }
+                                    //We found a hit a different vessel than ours
+                                    DetonationDistanceState = DetonationDistanceStates.Detonate;
+                                    return;
+                                }
+                                catch
+                                {
+                                    // ignored
                                 }
                             }
+                        }
                     }
 
-                        break;
-                }
+                    break;
+            }
 
-                if (BDArmorySettings.DRAW_DEBUG_LABELS)
-                {
-                    Debug.Log("[BDArmory]: DetonationDistanceState = : " + DetonationDistanceState);
-                }
-            
+            if (BDArmorySettings.DRAW_DEBUG_LABELS)
+            {
+                Debug.Log("[BDArmory]: DetonationDistanceState = : " + DetonationDistanceState);
+            }
         }
 
         protected void SetInitialDetonationDistance()
         {
-
             if (this.DetonationDistance == -1)
             {
                 if (GuidanceMode == GuidanceModes.AAMLead || GuidanceMode == GuidanceModes.AAMPure)

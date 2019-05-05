@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace BDArmory.Core
@@ -21,8 +20,6 @@ namespace BDArmory.Core
                 building.damageDecay = 600f;
                 building.impactMomentumThreshold *= 150;
             }
-
         }
-
     }
 }

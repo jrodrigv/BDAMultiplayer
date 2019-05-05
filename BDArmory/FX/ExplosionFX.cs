@@ -1,11 +1,11 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using BDArmory.Core;
 using BDArmory.Core.Extension;
+using BDArmory.Core.Utils;
 using BDArmory.Misc;
 using UnityEngine;
-using System;
-using BDArmory.Core.Utils;
 using BDArmory.Events;
 
 namespace BDArmory.FX
@@ -43,8 +43,7 @@ namespace BDArmory.FX
         private void Start()
         {
             StartTime = Time.time;
-            MaxTime = (Range / ExplosionVelocity)*3f;
-
+            MaxTime = (Range / ExplosionVelocity) * 3f;
             CalculateBlastEvents();
             
             PEmitters = gameObject.GetComponentsInChildren<KSPParticleEmitter>();
@@ -64,29 +63,28 @@ namespace BDArmory.FX
             LightFx = gameObject.AddComponent<Light>();
             LightFx.color = Misc.Misc.ParseColor255("255,238,184,255");
             LightFx.intensity = 8;
-            LightFx.range = Range*3f;
+            LightFx.range = Range * 3f;
             LightFx.shadows = LightShadows.None;
 
             if (BDArmorySettings.DRAW_DEBUG_LABELS)
             {
                 Debug.Log(
-                    "[BDArmory]:Explosion started tntMass: {" + Power + "}  BlastRadius: {" + Range+ "} StartTime: {"+ StartTime + "}, Duration: {" + MaxTime + "}");
+                    "[BDArmory]:Explosion started tntMass: {" + Power + "}  BlastRadius: {" + Range + "} StartTime: {" + StartTime + "}, Duration: {" + MaxTime + "}");
             }
         }
 
         private void CalculateBlastEvents()
-        {  
+        {
             var temporalEventList = new List<BlastHitEvent>();
 
             temporalEventList.AddRange(ProcessingBlastSphere());
-      
 
             //Let's convert this temporal list on a ordered queue
             using (var enuEvents = temporalEventList.OrderBy(e => e.TimeToImpact).GetEnumerator())
             {
                 while (enuEvents.MoveNext())
                 {
-                    if(enuEvents.Current == null) continue;
+                    if (enuEvents.Current == null) continue;
 
                     if (BDArmorySettings.DRAW_DEBUG_LABELS)
                     {
@@ -109,17 +107,17 @@ namespace BDArmory.FX
             {
                 while (hitCollidersEnu.MoveNext())
                 {
-                    if(hitCollidersEnu.Current == null) continue;
+                    if (hitCollidersEnu.Current == null) continue;
 
                     Part partHit = hitCollidersEnu.Current.GetComponentInParent<Part>();
 
-                    if (partHit != null && partHit.mass > 0  && !parstAdded.Contains(partHit))
+                    if (partHit != null && partHit.mass > 0 && !parstAdded.Contains(partHit))
                     {
                         ProcessPartEvent(partHit, result, parstAdded);
                     }
                     else
                     {
-                         DestructibleBuilding building = hitCollidersEnu.Current.GetComponentInParent<DestructibleBuilding>();
+                        DestructibleBuilding building = hitCollidersEnu.Current.GetComponentInParent<DestructibleBuilding>();
 
                         if (building != null && !bulidingAdded.Contains(building))
                         {
@@ -137,7 +135,7 @@ namespace BDArmory.FX
             RaycastHit rayHit;
             if (Physics.Raycast(ray, out rayHit, Range, 557057))
             {
-                //TODO: Maybe we are not hitting building because we are hitting explosive parts. 
+                //TODO: Maybe we are not hitting building because we are hitting explosive parts.
 
                 DestructibleBuilding destructibleBuilding = rayHit.collider.GetComponentInParent<DestructibleBuilding>();
 
@@ -169,7 +167,7 @@ namespace BDArmory.FX
                     });
                     partsAdded.Add(part);
                 }
-            }               
+            }
         }
 
         private bool IsAngleAllowed(Vector3 direction, RaycastHit hit)
@@ -181,6 +179,7 @@ namespace BDArmory.FX
 
             return Vector3.Angle(direction, (hit.point - Position).normalized) < 100f;
         }
+
         /// <summary>
         /// This method will calculate if there is valid line of sight between the explosion origin and the specific Part
         /// In order to avoid collisions with the same missile part, It will not take into account those parts beloging to same vessel that contains the explosive part
@@ -243,7 +242,7 @@ namespace BDArmory.FX
                 pe.Dispose();
             }
 
-            if (ExplosionEvents.Count == 0 && TimeIndex > 3f*MaxTime)
+            if (ExplosionEvents.Count == 0 && TimeIndex > 2f * MaxTime)
             {
                 if (BDArmorySettings.DRAW_DEBUG_LABELS)
                 {
@@ -275,9 +274,9 @@ namespace BDArmory.FX
                 }
                 else
                 {
-                    ExecuteBuildingBlastEvent((BuildingBlastHitEvent) eventToExecute);
+                    ExecuteBuildingBlastEvent((BuildingBlastHitEvent)eventToExecute);
                 }
-            }   
+            }
         }
 
         private void ExecuteBuildingBlastEvent(BuildingBlastHitEvent eventToExecute)
@@ -286,7 +285,7 @@ namespace BDArmory.FX
             //buildings
             DestructibleBuilding building = eventToExecute.Building;
             building.damageDecay = 600f;
-            
+
             if (building)
             {
                 var distanceFactor = Mathf.Clamp01((Range - eventToExecute.Distance) / Range);
@@ -296,29 +295,28 @@ namespace BDArmory.FX
 
                 building.AddDamage(damageToBuilding);
 
-                if (building.Damage  > building.impactMomentumThreshold)
+                if (building.Damage > building.impactMomentumThreshold)
                 {
                     building.Demolish();
                 }
                 if (BDArmorySettings.DRAW_DEBUG_LABELS)
                 {
-                      Debug.Log("[BDArmory]: Explosion hit destructible building! Hitpoints Applied: " + Mathf.Round(damageToBuilding) +
-                               ", Building Damage : " + Mathf.Round(building.Damage) +
-                               " Building Threshold : " + building.impactMomentumThreshold);
-                }   
+                    Debug.Log("[BDArmory]: Explosion hit destructible building! Hitpoints Applied: " + Mathf.Round(damageToBuilding) +
+                             ", Building Damage : " + Mathf.Round(building.Damage) +
+                             " Building Threshold : " + building.impactMomentumThreshold);
+                }
             }
         }
 
         private void ExecutePartBlastEvent(PartBlastHitEvent eventToExecute)
         {
-            if (eventToExecute.Part == null ||eventToExecute.Part.Rigidbody == null || eventToExecute.Part.vessel == null || eventToExecute.Part.partInfo == null ) return;
+            if (eventToExecute.Part == null || eventToExecute.Part.Rigidbody == null || eventToExecute.Part.vessel == null || eventToExecute.Part.partInfo == null) return;
 
             try
             {
                 Part part = eventToExecute.Part;
                 Rigidbody rb = part.Rigidbody;
                 var realDistance = eventToExecute.Distance;
-
 
                 if (!eventToExecute.IsNegativePressure)
                 {
@@ -401,7 +399,7 @@ namespace BDArmory.FX
                 rotation = Quaternion.LookRotation(direction);
             }
 
-            GameObject newExplosion = (GameObject) Instantiate(go, position, rotation);
+            GameObject newExplosion = (GameObject)Instantiate(go, position, rotation);
             ExplosionFx eFx = newExplosion.AddComponent<ExplosionFx>();
             eFx.ExSound = soundClip;
             eFx.AudioSource = newExplosion.AddComponent<AudioSource>();
@@ -430,7 +428,6 @@ namespace BDArmory.FX
             {
                 if (pe.Current == null) continue;
                 pe.Current.emit = true;
-
             }
             pe.Dispose();
         }
@@ -501,4 +498,3 @@ namespace BDArmory.FX
         public DestructibleBuilding Building { get; set; }
     }
 }
-
