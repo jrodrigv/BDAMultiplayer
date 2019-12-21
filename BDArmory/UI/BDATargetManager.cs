@@ -429,7 +429,7 @@ namespace BDArmory.UI
             using (var team = TargetDatabase.GetEnumerator())
                 while (team.MoveNext())
                 {
-                    debugString.Append($"Team {team.Current.Key} targets:");
+                    debugString.Append($"TeamName {team.Current.Key} targets:");
                     debugString.Append(Environment.NewLine);
                     foreach (TargetInfo targetInfo in team.Current.Value)
                     {

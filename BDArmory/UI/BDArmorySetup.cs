@@ -737,7 +737,7 @@ namespace BDArmory.UI
                 }
 
                 GUIStyle teamButtonStyle = BDGuiSkin.box;
-                string teamText = $"Team: {ActiveWeaponManager.Team.Name}";
+                string teamText = $"TeamName: {ActiveWeaponManager.Team.Name}";
 
                 if (
                     GUI.Button(

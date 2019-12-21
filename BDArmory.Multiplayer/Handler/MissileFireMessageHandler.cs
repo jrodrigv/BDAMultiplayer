@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using BDArmory.Core;
 using BDArmory.Events;
+using BDArmory.Misc;
 using BDArmory.Modules;
 using BDArmory.Multiplayer.Interface;
 using LmpClient;
@@ -48,9 +49,9 @@ namespace BDArmory.Multiplayer.Handler
             if (missile.SourceVessel!= null && BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(missile.SourceVessel.id))
             {
                 return true;
-            }           
-           
-            missile.Team = message.Team;
+            }
+
+            missile.Team = BDTeam.Get(message.TeamName);
             missile.ActivateMissileMultiplayer();
             
             return true;

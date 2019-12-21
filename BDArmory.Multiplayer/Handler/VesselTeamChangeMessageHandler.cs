@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using BDArmory.Events;
+using BDArmory.Misc;
 using BDArmory.Modules;
 using BDArmory.Multiplayer.Interface;
 using BDArmory.UI;
@@ -23,12 +24,7 @@ namespace BDArmory.Multiplayer.Handler
 
             foreach (var weaponManager in weaponManagerList)
             {
-                var newTeam = message.Team == "B" ? true : false;
-
-                if (newTeam != weaponManager.team)
-                {
-                    weaponManager.ToggleTeam(false);
-                }
+                weaponManager.SetTeam(BDTeam.Get(message.Team));
             }
 
             return true;

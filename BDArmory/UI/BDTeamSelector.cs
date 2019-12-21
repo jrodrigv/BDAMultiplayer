@@ -40,7 +40,7 @@ namespace BDArmory.UI
         private void TeamSelectorWindow(int id)
         {
             height = margin;
-            // Team input field
+            // TeamName input field
             newTeamName = GUI.TextField(new Rect(margin, margin, width - buttonGap - 2 * margin - newTeanButtonWidth, buttonHeight), newTeamName, 30);
 
             // New team button

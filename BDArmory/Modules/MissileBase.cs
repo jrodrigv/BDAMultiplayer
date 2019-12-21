@@ -1120,7 +1120,7 @@ namespace BDArmory.Modules
 
         public void SendMissileFireEvent()
         {
-           Dependencies.Get<MissileFiredEventService>().PublishMissileFired(this.vessel, Team);
+           Dependencies.Get<MissileFiredEventService>().PublishMissileFired(this.vessel, Team.Name);
         }
     }
 }

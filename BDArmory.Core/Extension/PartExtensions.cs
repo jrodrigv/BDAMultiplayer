@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BDArmory.Core.Module;
 using BDArmory.Core.Services;
 using BDArmory.Core.Utils;
 using BDArmory.Events;

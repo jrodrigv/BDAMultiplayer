@@ -483,8 +483,8 @@ namespace BDArmory.Modules
             }
         }
 
-        // Team name
-        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "Team")]
+        // TeamName name
+        [KSPField(guiActive = true, guiActiveEditor = true, guiName = "TeamName")]
         public string teamString = "Neutral";
 
         // Serialized team
@@ -492,7 +492,7 @@ namespace BDArmory.Modules
         public string team;
         private bool team_loaded = false;
 
-        [KSPAction("Next Team")]
+        [KSPAction("Next TeamName")]
         public void AGNextTeam(KSPActionParam param)
         {
             NextTeam();
@@ -546,7 +546,7 @@ namespace BDArmory.Modules
             SetTeam(BDTeam.Get(teamList[(teamList.IndexOf(Team.Name) + 1) % teamList.Count]));
         }
 
-        [KSPEvent(guiActive = false, guiActiveEditor = true, active = true, guiName = "Select Team")]
+        [KSPEvent(guiActive = false, guiActiveEditor = true, active = true, guiName = "Select TeamName")]
         public void SelectTeam()
         {
             BDTeamSelector.Instance.Open(this, new Vector2(Input.mousePosition.x, Screen.height - Input.mousePosition.y));
