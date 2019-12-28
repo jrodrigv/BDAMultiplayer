@@ -477,7 +477,19 @@ namespace BDArmory.Modules
             {
                 if (!team_loaded) return;
                 if (!BDArmorySetup.Instance.Teams.ContainsKey(value.Name))
+                {
                     BDArmorySetup.Instance.Teams.Add(value.Name, value);
+                }
+
+                if (BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(this.vessel.id))
+                {
+                    if (teamString != value.Name)
+                    {
+                        Dependencies.Get<VesselTeamChangeService>().PublishVesselTeamEvent(vessel.id, value.Name);
+                    }
+                }
+               
+                   
                 teamString = value.Name;
                 team = value.Serialize();
             }
@@ -518,6 +530,7 @@ namespace BDArmory.Modules
                     BDATargetManager.RemoveTarget(vessel.gameObject.GetComponent<TargetInfo>());
                     Destroy(vessel.gameObject.GetComponent<TargetInfo>());
                 }
+
                 OnChangeTeam?.Invoke(this, Team);
                 ResetGuardInterval();
             }

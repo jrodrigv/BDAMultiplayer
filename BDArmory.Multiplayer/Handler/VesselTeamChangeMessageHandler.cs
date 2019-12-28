@@ -24,7 +24,7 @@ namespace BDArmory.Multiplayer.Handler
 
             foreach (var weaponManager in weaponManagerList)
             {
-                weaponManager.SetTeam(BDTeam.Get(message.Team));
+                weaponManager.SetTeam(BDTeam.Get(message.Team),false);
             }
 
             return true;
