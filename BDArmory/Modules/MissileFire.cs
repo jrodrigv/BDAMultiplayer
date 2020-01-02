@@ -516,6 +516,12 @@ namespace BDArmory.Modules
 
         public void SetTeam(BDTeam team, bool publish = true)
         {
+            if (BDArmorySettings.MULTIPLAYER_ACTIVE &&
+                !BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(this.vessel.id))
+            {
+                return;
+            }
+
             if (HighLogic.LoadedSceneIsFlight)
             {
                 using (var wpnMgr = vessel.FindPartModulesImplementing<MissileFire>().GetEnumerator())
@@ -550,6 +556,7 @@ namespace BDArmory.Modules
         [KSPEvent(active = true, guiActiveEditor = true, guiActive = false)]
         public void NextTeam()
         {
+
             var teamList = new List<string> { "A", "B" };
             using (var teams = BDArmorySetup.Instance.Teams.GetEnumerator())
                 while (teams.MoveNext())
