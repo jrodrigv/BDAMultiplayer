@@ -40,7 +40,7 @@ namespace BDArmory.UI
         private void TeamSelectorWindow(int id)
         {
             height = margin;
-            // Team input field
+            // TeamName input field
             newTeamName = GUI.TextField(new Rect(margin, margin, width - buttonGap - 2 * margin - newTeanButtonWidth, buttonHeight), newTeamName, 30);
 
             // New team button
@@ -88,7 +88,7 @@ namespace BDArmory.UI
                 GUI.EndScrollView();
 
             // Buttons
-            if (Event.current.type == EventType.keyUp)
+            if (Event.current.type == EventType.KeyUp)
             {
                 if ((Event.current.keyCode == KeyCode.Return || Event.current.keyCode == KeyCode.KeypadEnter) && !string.IsNullOrEmpty(newTeamName.Trim()))
                 {

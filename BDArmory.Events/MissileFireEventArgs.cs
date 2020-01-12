@@ -5,6 +5,6 @@ namespace BDArmory.Events
     [Serializable]
     public class MissileFireEventArgs : VesselEventArgs
     {
-        public bool Team { get; set; }
+        public string TeamName { get; set; }
     }
 }

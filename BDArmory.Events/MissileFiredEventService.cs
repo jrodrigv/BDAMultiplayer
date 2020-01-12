@@ -2,13 +2,13 @@
 {
     public class MissileFiredEventService : NotificableService<MissileFireEventArgs>
     {
-        public void PublishMissileFired(Vessel missileVessel, bool team)
+        public void PublishMissileFired(Vessel missileVessel, string teamName)
         {
             PublishEvent(
                 new MissileFireEventArgs()
                 {
                     VesselId = missileVessel.id,
-                    Team = team
+                    TeamName = teamName
                 }
             );
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using BDArmory.Core.Module;
 using BDArmory.Core.Services;
 using BDArmory.Core.Utils;
 using BDArmory.Events;
@@ -247,16 +248,18 @@ namespace BDArmory.Core.Extension
             //Thanks FlowerChild
             //refreshes part action window
 
-            IEnumerator<UIPartActionWindow> window = UnityEngine.Object.FindObjectsOfType(typeof(UIPartActionWindow)).Cast<UIPartActionWindow>().GetEnumerator();
-            while (window.MoveNext())
-            {
-                if (window.Current == null) continue;
-                if (window.Current.part == part)
-                {
-                    window.Current.displayDirty = true;
-                }
-            }
-            window.Dispose();
+            //IEnumerator<UIPartActionWindow> window = UnityEngine.Object.FindObjectsOfType(typeof(UIPartActionWindow)).Cast<UIPartActionWindow>().GetEnumerator();
+            //while (window.MoveNext())
+            //{
+            //    if (window.Current == null) continue;
+            //    if (window.Current.part == part)
+            //    {
+            //        window.Current.displayDirty = true;
+            //    }
+            //}
+            //window.Dispose();
+
+            MonoUtilities.RefreshContextWindows(part);
         }
 
         public static bool IsMissile(this Part part)
