@@ -40,6 +40,8 @@
     <Compile Include="Handler\FireMessageHandler.cs" />
     <Compile Include="Handler\ForceMessageHandler.cs" />
     <Compile Include="Handler\MissileFireMessageHandler.cs" />
+    <Compile Include="Handler\RequestVesselTeamEventArgs.cs" />
+    <Compile Include="Handler\RequestVesselTeamMessageHandler.cs" />
     <Compile Include="Handler\TurretAimMessageHandler.cs" />
     <Compile Include="Handler\VesselTeamChangeMessageHandler.cs" />
     <Compile Include="Interface\IBdaMessageHandler.cs" />

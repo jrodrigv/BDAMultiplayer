@@ -98,6 +98,7 @@ namespace BDArmory.Multiplayer
             Dependencies.Register<IBdaMessageHandler<TurretAimEventArgs>, TurretAimMessageHandler>();
             Dependencies.Register<IBdaMessageHandler<FireEventArgs>, FireMessageHandler>();
             Dependencies.Register<IBdaMessageHandler<MissileFireEventArgs>,MissileFireMessageHandler>();
+            Dependencies.Register<IBdaMessageHandler<RequestVesselTeamEventArgs>, RequestVesselTeamMessageHandler>();
         }
 
         public void HandlerFunction(byte[] messageData)
@@ -135,12 +136,16 @@ namespace BDArmory.Multiplayer
                 case MissileFireEventArgs args:
                     Dependencies.Get<IBdaMessageHandler<MissileFireEventArgs>>().ProcessMessage(args);
                     break;
+                case RequestVesselTeamEventArgs args:
+                    Dependencies.Get<IBdaMessageHandler<RequestVesselTeamEventArgs>>().ProcessMessage(args);
+                    break;
 
             }
         }
 
         private void SuscribeToCoreEvents()
         {
+            GameEvents.onVesselLoaded.Add(OnVesselLoad);
             onModMessageReceivedEvent = GameEvents.FindEvent<EventData<string, byte[]>>("onModMessageReceived");
             if (onModMessageReceivedEvent != null)
             {
@@ -156,11 +161,20 @@ namespace BDArmory.Multiplayer
                 Dependencies.Get<TurretAimEventService>().OnActionExecuted += OnActionExecuted;
                 Dependencies.Get<FireEventService>().OnActionExecuted += OnActionExecuted;
                 Dependencies.Get<MissileFiredEventService>().OnActionExecuted += OnActionExecuted;
+                Dependencies.Get<RequestTeamEventService>().OnActionExecuted += OnActionExecuted;
             }
             else
             {
                 Debug.Log("[BDArmory]: LMP Multiplayer disabled");
                 BDArmorySettings.MULTIPLAYER_ACTIVE = false;
+            }
+        }
+
+        private void OnVesselLoad(Vessel vessel)
+        {
+            if (!BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(vessel.id))
+            {
+                Dependencies.Get<RequestTeamEventService>().PublishRequest(vessel.id);
             }
         }
 

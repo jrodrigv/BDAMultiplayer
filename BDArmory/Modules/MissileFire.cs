@@ -516,7 +516,7 @@ namespace BDArmory.Modules
 
         public void SetTeam(BDTeam team, bool publish = true)
         {
-            if (BDArmorySettings.MULTIPLAYER_ACTIVE &&
+            if (publish && BDArmorySettings.MULTIPLAYER_ACTIVE &&
                 !BDArmorySettings.MULTIPLAYER_VESSELS_OWNED.Contains(this.vessel.id))
             {
                 return;
