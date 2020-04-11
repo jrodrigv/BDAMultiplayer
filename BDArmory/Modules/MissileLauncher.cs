@@ -82,11 +82,11 @@ namespace BDArmory.Modules
         [KSPField]
         public float maxAoA = 35;
 
-        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "Direction: "),
-            UI_Toggle(disabledText = "Lateral", enabledText = "Forward")]
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = false, guiName = "#LOC_BDArmory_Direction"),//Direction: 
+            UI_Toggle(disabledText = "#LOC_BDArmory_Direction_disabledText", enabledText = "#LOC_BDArmory_Direction_enabledText")]//Lateral--Forward
         public bool decoupleForward = false;
 
-        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true, guiName = "Decouple Speed"),
+        [KSPField(isPersistant = true, guiActive = false, guiActiveEditor = true, guiName = "#LOC_BDArmory_DecoupleSpeed"),//Decouple Speed
                   UI_FloatRange(minValue = 0f, maxValue = 10f, stepIncrement = 0.1f, scene = UI_Scene.Editor)]
         public float decoupleSpeed = 0;
 
@@ -134,7 +134,7 @@ namespace BDArmory.Modules
         [KSPField]
         public float rndAngVel = 0;
 
-        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "Max Altitude"),
+        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_BDArmory_MaxAltitude"),//Max Altitude
          UI_FloatRange(minValue = 0f, maxValue = 5000f, stepIncrement = 10f, scene = UI_Scene.All)]
         public float maxAltitude = 0f;
 
@@ -153,7 +153,7 @@ namespace BDArmory.Modules
 
         private bool terminalGuidanceActive;
 
-        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "Terminal Guidance: "), UI_Toggle(disabledText = "false", enabledText = "true")]
+        [KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true, guiName = "#LOC_BDArmory_TerminalGuidance"), UI_Toggle(disabledText = "#LOC_BDArmory_false", enabledText = "#LOC_BDArmory_true")]//Terminal Guidance: false true
         public bool terminalGuidanceShouldActivate = true;
 
         [KSPField]
@@ -277,7 +277,7 @@ namespace BDArmory.Modules
             if (BDArmorySetup.Instance.ActiveWeaponManager != null) BDArmorySetup.Instance.ActiveWeaponManager.UpdateList();
         }
 
-        [KSPEvent(guiActive = true, guiName = "Fire Missile", active = true)]
+        [KSPEvent(guiActive = true, guiName = "#LOC_BDArmory_FireMissile", active = true)]//Fire Missile
         public void GuiFire()
         {
             if (BDArmorySetup.Instance.ActiveWeaponManager != null && BDArmorySetup.Instance.ActiveWeaponManager.vessel == vessel) BDArmorySetup.Instance.ActiveWeaponManager.SendTargetDataToMissile(this);
@@ -296,7 +296,7 @@ namespace BDArmory.Modules
             if (BDArmorySetup.Instance.ActiveWeaponManager != null) BDArmorySetup.Instance.ActiveWeaponManager.UpdateList();
         }
 
-        [KSPEvent(guiActive = true, guiActiveEditor = false, active = true, guiName = "Jettison")]
+        [KSPEvent(guiActive = true, guiActiveEditor = false, active = true, guiName = "#LOC_BDArmory_Jettison")]//Jettison
         public override void Jettison()
         {
             if (missileTurret) return;
@@ -892,48 +892,48 @@ namespace BDArmory.Modules
             }
         }
 
-        //private void CheckMiss()
-        //{
-        //    float sqrDist = (float) ((TargetPosition + (TargetVelocity * Time.fixedDeltaTime)) - (vessel.CoM + (vessel.Velocity() * Time.fixedDeltaTime))).sqrMagnitude;
-        //    if (sqrDist < 160000 || MissileState == MissileStates.PostThrust)
-        //    {
-        //        checkMiss = true;
-        //    }
-        //    if (maxAltitude != 0f)
-        //    {
-        //        if (vessel.altitude >= maxAltitude) checkMiss = true;
-        //    }
+        private void CheckMiss()
+        {
+            float sqrDist = (float) ((TargetPosition + (TargetVelocity * Time.fixedDeltaTime)) - (vessel.CoM + (vessel.Velocity() * Time.fixedDeltaTime))).sqrMagnitude;
+            if (sqrDist < 160000 || MissileState == MissileStates.PostThrust)
+            {
+                checkMiss = true;
+            }
+            if (maxAltitude != 0f)
+            {
+                if (vessel.altitude >= maxAltitude) checkMiss = true;
+            }
 
-        //    //kill guidance if missileBase has missed
-        //    if (!HasMissed && checkMiss)
-        //    {
-        //        bool noProgress = MissileState == MissileStates.PostThrust && (Vector3.Dot(vessel.Velocity() - TargetVelocity, TargetPosition - vessel.transform.position) < 0);
-        //        if (Vector3.Dot(TargetPosition - transform.position, transform.forward) < 0 || noProgress)
-        //        {
-        //            Debug.Log("[BDArmory]: Missile has missed!");
+            //kill guidance if missileBase has missed
+            if (!HasMissed && checkMiss)
+            {
+                bool noProgress = MissileState == MissileStates.PostThrust && (Vector3.Dot(vessel.Velocity() - TargetVelocity, TargetPosition - vessel.transform.position) < 0);
+                if (Vector3.Dot(TargetPosition - transform.position, transform.forward) < 0 || noProgress)
+                {
+                    Debug.Log("[BDArmory]: Missile has missed!");
 
-        //            if (vessel.altitude >= maxAltitude && maxAltitude != 0f)
-        //                Debug.Log("[BDArmory]: CheckMiss trigged by MaxAltitude");
+                    if (vessel.altitude >= maxAltitude && maxAltitude != 0f)
+                        Debug.Log("[BDArmory]: CheckMiss trigged by MaxAltitude");
 
-        //            HasMissed = true;
-        //            guidanceActive = false;
+                    HasMissed = true;
+                    guidanceActive = false;
 
-        //            TargetMf = null;
+                    TargetMf = null;
 
-        //            MissileLauncher launcher = this as MissileLauncher;
-        //            if (launcher != null)
-        //            {
-        //                if (launcher.hasRCS) launcher.KillRCS();
-        //            }
+                    MissileLauncher launcher = this as MissileLauncher;
+                    if (launcher != null)
+                    {
+                        if (launcher.hasRCS) launcher.KillRCS();
+                    }
 
-        //            if (sqrDist < Mathf.Pow(GetBlastRadius() * 0.5f, 2)) part.Destroy();
+                    if (sqrDist < Mathf.Pow(GetBlastRadius() * 0.5f, 2)) part.Destroy();
 
-        //            isTimed = true;
-        //            detonationTime = TimeIndex + 1.5f;
-        //            return;
-        //        }
-        //    }
-        //}
+                    isTimed = true;
+                    detonationTime = TimeIndex + 1.5f;
+                    return;
+                }
+            }
+        }
 
 
         void UpdateGuidance()
@@ -1066,10 +1066,10 @@ namespace BDArmory.Modules
                         SLWGuidance();
                     }
 
-                    CheckMiss(TargetPosition);
                 }
                 else
                 {
+                    CheckMiss();
                     TargetMf = null;
                     if (aero)
                     {
@@ -1087,8 +1087,6 @@ namespace BDArmory.Modules
                     KillRCS();
                 }
             }
-
-            CheckMiss();
         }
 
         // feature_engagementenvelope: terminal guidance mode for cruise missiles
@@ -1622,6 +1620,7 @@ namespace BDArmory.Modules
                 vesselReferenceTransform.rotation = Quaternion.LookRotation(-rotationTransform.up, rotationTransform.forward);
             }
             DoAero(cruiseTarget);
+            CheckMiss();
         }
 
         void AAMGuidance()
@@ -1652,6 +1651,7 @@ namespace BDArmory.Modules
             if (TimeIndex > dropTime + 0.25f)
             {
                 DoAero(aamTarget);
+                CheckMiss();
             }
 
         }
@@ -1670,6 +1670,7 @@ namespace BDArmory.Modules
                         Debug.Log("[BDArmory]: AGM Missile guidance failed - target out of view");
                         guidanceActive = false;
                     }
+                    CheckMiss();
                 }
                 else
                 {
@@ -1716,6 +1717,8 @@ namespace BDArmory.Modules
             }
 
             if (SLWTarget.y > 0f) SLWTarget.y = getSWLWOffset;
+
+            CheckMiss();
 
         }
 
