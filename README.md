@@ -7,7 +7,7 @@ This is a branch of BDArmory with multiplayer support based on LMP.
 Installation process for KSP 1.9.1:
 - Remove any BDArmory folder and LMPClient folder from your GameData folder
 - Remove your LMPServer too
-- Download LMP 0.25 version [https://github.com/LunaMultiplayer/LunaMultiplayer/releases/tag/0.25.0]
+- Download LMP 0.25 version https://github.com/LunaMultiplayer/LunaMultiplayer/releases/tag/0.25.0
 - Copy the LMPClient folder inside your GameData folder
 - Copy the LMPServer wherever you want.
 - Execute the LMPServer/Server.exe once and close it after its finish starting.
