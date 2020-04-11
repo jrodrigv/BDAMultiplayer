@@ -75,13 +75,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\_LocalDev\KSPRefs\KSPAssets.dll</HintPath>
     </Reference>
-    <Reference Include="LmpClient, Version=0.21.0.212, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="LmpClient, Version=0.24.0.258, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_18_BDAM1\GameData\LunaMultiplayer\Plugins\LmpClient.dll</HintPath>
+      <HintPath>..\..\_LocalDev\KSPRefs\LmpClient.dll</HintPath>
     </Reference>
-    <Reference Include="LmpCommon, Version=0.21.0.212, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="LmpCommon, Version=0.24.0.258, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>G:\GAMES\KERBAL\Kerbal Space Program_18_BDAM1\GameData\LunaMultiplayer\Plugins\LmpCommon.dll</HintPath>
+      <HintPath>..\..\_LocalDev\KSPRefs\LmpCommon.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
