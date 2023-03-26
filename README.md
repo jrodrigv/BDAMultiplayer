@@ -4,10 +4,10 @@ BDAMultiplayer Readme
 
 This is a branch of BDArmory with multiplayer support based on LMP.
 
-Installation process for KSP 1.12.2:
+Installation process for KSP 1.12.5:
 - Remove any BDArmory folder and LMPClient folder from your GameData folder
 - Remove your LMPServer too
-- Download LMP 0.28 version client and server https://github.com/LunaMultiplayer/LunaMultiplayer/releases/tag/0.28.0
+- Download LMP 0.28 version client and server https://github.com/LunaMultiplayer/LunaMultiplayer/releases/tag/0.29.0
 - Execute the LMPServer/Server.exe once and close it after its finish starting.
 - Download latest BDAMultiplayer release
 - Enjoy and remember this is very beta and untested, you might find issues not only related to this mod, but to LMP and also to BDArmory it self. It is very important that if you find any issues to report them with clear steps to reproduce and always attaching your KSP.log file. 
