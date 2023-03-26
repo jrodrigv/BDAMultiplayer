@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>BDArmory.Multiplayer</RootNamespace>
     <AssemblyName>BDArmory.Multiplayer</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -75,13 +75,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\_LocalDev\KSPRefs\KSPAssets.dll</HintPath>
     </Reference>
-    <Reference Include="LmpClient, Version=0.24.0.258, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="LmpClient, Version=0.29.0.577, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\_LocalDev\KSPRefs\LmpClient.dll</HintPath>
-    </Reference>
-    <Reference Include="LmpCommon, Version=0.24.0.258, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\_LocalDev\KSPRefs\LmpCommon.dll</HintPath>
+      <HintPath>D:\GAMES\KERBAL\mods\LunaMultiplayer\Plugins\LmpClient.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
